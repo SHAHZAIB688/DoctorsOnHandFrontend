@@ -4,6 +4,13 @@ import client from "../api/client";
 import DashboardShell from "../components/DashboardShell";
 import { DashboardIcon, DoctorIcon, AppointmentIcon, FileIcon } from "../components/icons";
 import { generatePDF } from "../utils/generatePDF";
+import Loader from "../components/Loader";
+
+// Format consultation fee display
+const formatConsultationFee = (fee) => {
+  if (!fee || fee === 0) return "Free";
+  return `Rs. ${fee}`;
+};
 
 const PatientDashboard = () => {
   const [doctors, setDoctors] = useState([]);
@@ -12,6 +19,7 @@ const PatientDashboard = () => {
   const [form, setForm] = useState({ doctorProfileId: "", date: "", timeSlot: "", reason: "" });
   const [availableSlots, setAvailableSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [paymentModal, setPaymentModal] = useState({ isOpen: false, appointmentId: null, doctorName: "", method: "stripe", details: "" });
   const [reviewModal, setReviewModal] = useState({ isOpen: false, appointmentId: null, doctorName: "", rating: 5, comment: "" });
   const prevAppointmentsRef = useRef([]);
@@ -37,6 +45,8 @@ const PatientDashboard = () => {
       setAppointments(data);
     } catch (err) {
       console.error("Failed to fetch appointments");
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -165,7 +175,7 @@ const PatientDashboard = () => {
         list.push({ id: `call-${a._id}`, title: "Call In-Progress", message: `Dr. ${a.doctor?.name} is waiting for you.`, type: "alert", linkTab: "history" });
       }
       if (a.status === "awaiting-payment") {
-        list.push({ id: `pay-${a._id}`, title: "Payment Pending", message: `Please pay Rs. ${a.doctorProfile?.consultationFee || 2000} to complete your visit.`, type: "info", linkTab: "history" });
+        list.push({ id: `pay-${a._id}`, title: "Payment Pending", message: `Please pay ${formatConsultationFee(a.doctorProfile?.consultationFee || 2000)} to complete your visit.`, type: "info", linkTab: "history" });
       }
       if (a.prescription) {
         list.push({ id: `rx-${a._id}`, title: "New Prescription", message: `Dr. ${a.doctor?.name} has sent you a prescription.`, type: "info", linkTab: "history" });
@@ -176,6 +186,14 @@ const PatientDashboard = () => {
     });
     return list;
   }, [appointments]);
+
+  if (initialLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -219,7 +237,7 @@ const PatientDashboard = () => {
                       </div>
                       <div className="mt-4 flex items-center justify-between border-t border-slate-50 pt-3">
                         <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Fee</div>
-                        <div className="text-sm font-bold text-brand-600">Rs. {d.consultationFee || 2000}</div>
+                        <div className="text-sm font-bold text-brand-600">{formatConsultationFee(d.consultationFee || 2000)}</div>
                       </div>
                     </div>
                   ))}

@@ -18,3 +18,4 @@ export const FileIcon = () => <Svg><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2
 export const ProfileIcon = () => <Svg><circle cx="12" cy="8" r="4" /><path d="M4 21c2-4 5-6 8-6s6 2 8 6" /></Svg>;
 export const LogoutIcon = () => <Svg><path d="M10 17l5-5-5-5" /><path d="M15 12H3" /><path d="M21 3v18" /></Svg>;
 export const BellIcon = () => <Svg><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></Svg>;
+export const ChevronDownIcon = ({ className = "" }) => <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>;

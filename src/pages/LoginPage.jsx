@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import LogoImg from "../assets/logo2.jpeg";
 import { useAuth } from "../state/AuthContext";
+import Loader from "../components/Loader";
 
 const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -27,10 +28,10 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 md:p-12">
-      <div className="flex w-full max-w-4xl flex-col overflow-hidden rounded-[2.5rem] bg-white shadow-2xl md:flex-row min-h-fit">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 sm:p-6 md:p-12">
+      <div className="flex w-full max-w-4xl flex-col overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-2xl md:flex-row min-h-fit">
         {/* Left Side - Brand Panel */}
-        <div className="relative flex w-full flex-col justify-between bg-[#2e324d] p-8 text-white md:w-[40%] lg:p-10">
+        <div className="relative flex w-full flex-col justify-between bg-[#2e324d] p-6 sm:p-8 text-white md:w-[40%] lg:p-10">
           <div className="relative z-10">
             <div className="flex items-center gap-3">
               <img src={LogoImg} alt="Logo" className="h-10 w-10 rounded-xl bg-white/10 p-1" />
@@ -42,10 +43,10 @@ const LoginPage = () => {
           </div>
 
           <div className="relative z-10 space-y-4 my-10">
-            <h1 className="text-4xl font-extrabold leading-tight md:text-5xl">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight">
               Start our <br /> journey
             </h1>
-            <p className="text-xs leading-relaxed text-slate-400">
+            <p className="text-[10px] sm:text-xs leading-relaxed text-slate-400">
               Join thousands of healthcare professionals and patients who trust Prescripto for their medical appointments.
             </p>
           </div>
@@ -59,9 +60,9 @@ const LoginPage = () => {
         </div>
 
         {/* Right Side - Form Panel */}
-        <div className="flex w-full flex-col justify-center px-8 md:px-12 py-8 md:w-[60%]">
+        <div className="flex w-full flex-col justify-center px-6 sm:px-8 md:px-12 py-6 sm:py-8 md:w-[60%]">
           <div className="mb-6">
-            <h2 className="text-3xl font-extrabold text-slate-900">Sign In</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Sign In</h2>
             <div className="mt-2 h-1 w-10 rounded-full bg-brand-600" />
           </div>
 
@@ -92,14 +93,14 @@ const LoginPage = () => {
               <button
                 disabled={loading}
                 type="submit"
-                className="w-full rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 py-4 text-sm font-bold text-white shadow-xl shadow-brand-100 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
+                className="w-full rounded-2xl bg-gradient-to-r from-brand-600 to-brand-500 py-3 sm:py-4 text-sm font-bold text-white shadow-xl shadow-brand-100 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60"
               >
                 {loading ? "Processing..." : "Sign In"}
               </button>
             </div>
           </form>
 
-          <div className="mt-8 text-center text-sm font-medium text-slate-500">
+          <div className="mt-6 sm:mt-8 text-center text-sm font-medium text-slate-500">
             <p>
               Not a member?{" "}
               <Link to="/signup" className="font-bold text-brand-600 hover:underline">Sign Up</Link>

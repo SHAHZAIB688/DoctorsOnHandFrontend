@@ -28,6 +28,7 @@ import {
   UsersIcon,
 } from "../components/icons";
 import { useMemo } from "react";
+import Loader from "../components/Loader";
 
 const COLORS = ["#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#9333ea"];
 
@@ -163,7 +164,11 @@ const AdminDashboard = () => {
     >
       {(activeTab) => (
       <>
-        {loading && <div className="rounded-2xl bg-white p-8 text-center text-sm text-slate-500 shadow-sm">Loading...</div>}
+        {loading && (
+          <div className="flex min-h-screen items-center justify-center bg-slate-50">
+            <Loader />
+          </div>
+        )}
 
         {!loading && activeTab === "dashboard" && (
           <div className="grid gap-4">

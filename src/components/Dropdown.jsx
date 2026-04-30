@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDownIcon } from "../icons";
+import { ChevronDownIcon } from "./icons";
 
 const Dropdown = ({ options, value, onChange, placeholder = "Select option", className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,7 +23,7 @@ const Dropdown = ({ options, value, onChange, placeholder = "Select option", cla
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between border-b border-slate-200 py-3 text-sm font-medium text-slate-700 outline-none transition-all focus:border-brand-600"
+        className="flex w-full h-full items-center justify-between border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700 outline-none transition-all focus:border-brand-600 hover:border-slate-300 bg-white"
       >
         <span className={!selectedOption ? "text-slate-400" : ""}>{displayLabel}</span>
         <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />

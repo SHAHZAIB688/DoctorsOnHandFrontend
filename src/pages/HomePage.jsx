@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import client, { buildBackendAssetUrl } from "../api/client";
+import Loader from "../components/Loader";
+
+// Format consultation fee display
+const formatConsultationFee = (fee) => {
+  if (!fee || fee === 0) return "Free";
+  return `Rs. ${fee}`;
+};
 
 const HomePage = () => {
   const [doctors, setDoctors] = useState([]);
@@ -77,7 +84,7 @@ const HomePage = () => {
 
         {loading ? (
           <div className="flex h-40 items-center justify-center rounded-2xl border border-slate-200 bg-white">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
+            <Loader />
           </div>
         ) : doctors.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
@@ -98,6 +105,7 @@ const HomePage = () => {
                 <div className="mt-3 space-y-1 text-sm text-slate-600">
                   <p>Experience: {doctor.experienceYears || 5}+ years</p>
                   <p>Rating: 4.8 / 5.0</p>
+                  <p className="font-semibold text-brand-600">Fee: {formatConsultationFee(doctor.consultationFee)}</p>
                 </div>
                 <Link to="/dashboard" className="mt-4 inline-block w-full rounded-xl bg-brand-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-brand-700">
                   Book Now

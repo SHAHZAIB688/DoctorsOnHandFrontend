@@ -6,9 +6,30 @@ import DashboardShell from "../components/DashboardShell";
 import VerificationModal from "../components/VerificationModal";
 import PrescriptionForm from "../components/PrescriptionForm";
 import { DashboardIcon, AppointmentIcon, FileIcon, ProfileIcon, IconWrapper } from "../components/icons";
+import Loader from "../components/Loader";
 
-const WEEKDAY_OPTIONS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
-const DEFAULT_SLOT = { start: "09:00", end: "17:00" };
+const WEEKDAY_OPTIONS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+const DEFAULT_SLOT = { start: "09:00", end: "07:00" };
+
+// Convert 24-hour time to 12-hour format with AM/PM
+const convertTo12Hour = (time24) => {
+  if (!time24) return "";
+  
+  const [hours, minutes] = time24.split(':');
+  const hour = parseInt(hours);
+  const minute = minutes;
+  
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12; // Convert 0 to 12 for 12 AM
+  
+  return `${hour12}:${minute} ${period}`;
+};
+
+// Format consultation fee display
+const formatConsultationFee = (fee) => {
+  if (!fee || fee === 0) return "Free";
+  return `Rs. ${fee}`;
+};
 
 const normalizeSingleAvailability = (slots = []) => {
   const matched = slots.find((slot) => WEEKDAY_OPTIONS.includes((slot?.day || "").trim().toLowerCase()));
@@ -202,7 +223,11 @@ const DoctorDashboard = () => {
   };
 
   if (loading) {
-    return <div className="rounded-2xl bg-white p-8 text-center text-sm text-slate-500 shadow-sm">Loading...</div>;
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <Loader />
+      </div>
+    );
   }
 
   if (profile?.status !== "approved") {
@@ -254,58 +279,74 @@ const DoctorDashboard = () => {
             </section>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-slate-900">Manage Availability</h3>
+                <div className="text-xs text-slate-500">Set your working hours</div>
               </div>
               
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl border border-slate-100 bg-slate-50">
-                  <input
-                    type="text"
-                    list="start-day-options"
-                    value={availability[0]?.startDay || "monday"}
-                    className="w-[150px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm capitalize outline-none focus:border-brand-600"
-                    onChange={(e) => setAvailability((p) => [{ ...(p[0] || DEFAULT_SLOT), startDay: e.target.value.toLowerCase() }])}
-                  />
-                  <span className="text-slate-400 text-xs font-bold">TO</span>
-                  <input
-                    type="text"
-                    list="end-day-options"
-                    value={availability[0]?.endDay || "friday"}
-                    className="w-[150px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm capitalize outline-none focus:border-brand-600"
-                    onChange={(e) => setAvailability((p) => [{ ...(p[0] || DEFAULT_SLOT), endDay: e.target.value.toLowerCase() }])}
-                  />
-                  <datalist id="start-day-options">
-                    {WEEKDAY_OPTIONS.map((d) => (
-                      <option key={`start-${d}`} value={d} />
-                    ))}
-                  </datalist>
-                  <datalist id="end-day-options">
-                    {WEEKDAY_OPTIONS.map((d) => (
-                      <option key={`end-${d}`} value={d} />
-                    ))}
-                  </datalist>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="time"
-                      value={availability[0]?.start || DEFAULT_SLOT.start}
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-600"
-                      onChange={(e) => setAvailability((p) => [{ ...(p[0] || { day: "monday" }), start: e.target.value }])}
-                    />
-                    <span className="text-slate-400 text-xs font-bold">TO</span>
-                    <input
-                      type="time"
-                      value={availability[0]?.end || DEFAULT_SLOT.end}
-                      className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-600"
-                      onChange={(e) => setAvailability((p) => [{ ...(p[0] || { day: "monday" }), end: e.target.value }])}
-                    />
+              <div className="space-y-6">
+                {/* Days Selection */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">Working Days</label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <select
+                      value={availability[0]?.startDay || "monday"}
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm capitalize outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      onChange={(e) => setAvailability((p) => [{ ...(p[0] || DEFAULT_SLOT), startDay: e.target.value.toLowerCase() }])}
+                    >
+                      {WEEKDAY_OPTIONS.map((d) => (
+                        <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
+                      ))}
+                    </select>
+                    
+                    <span className="text-slate-400 font-medium">to</span>
+                    
+                    <select
+                      value={availability[0]?.endDay || "friday"}
+                      className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm capitalize outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                      onChange={(e) => setAvailability((p) => [{ ...(p[0] || DEFAULT_SLOT), endDay: e.target.value.toLowerCase() }])}
+                    >
+                      {WEEKDAY_OPTIONS.map((d) => (
+                        <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Time Selection */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-700">Working Hours</label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="time"
+                        value={availability[0]?.start || DEFAULT_SLOT.start}
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                        onChange={(e) => setAvailability((p) => [{ ...(p[0] || { day: "monday" }), start: e.target.value }])}
+                      />
+                      <span className="text-slate-400 font-medium">to</span>
+                      <input
+                        type="time"
+                        value={availability[0]?.end || DEFAULT_SLOT.end}
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                        onChange={(e) => setAvailability((p) => [{ ...(p[0] || { day: "monday" }), end: e.target.value }])}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Current Schedule Display */}
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <div className="text-sm font-medium text-slate-700 mb-2">Current Schedule</div>
+                  <div className="text-sm text-slate-600">
+                    {availability[0]?.startDay?.charAt(0).toUpperCase() + availability[0]?.startDay?.slice(1)} to {availability[0]?.endDay?.charAt(0).toUpperCase() + availability[0]?.endDay?.slice(1)}, {convertTo12Hour(availability[0]?.start)} - {convertTo12Hour(availability[0]?.end)}
                   </div>
                 </div>
               </div>
-              
+
               <button 
                 type="button" 
-                className="mt-6 w-full rounded-xl bg-brand-600 px-6 py-3 text-sm font-bold text-white hover:bg-brand-700 transition-all shadow-lg shadow-brand-100" 
+                className="mt-6 w-full rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-3 text-sm font-bold text-white hover:from-brand-700 hover:to-brand-600 transition-all shadow-lg shadow-brand-100 active:scale-95" 
                 onClick={saveAvailability}
               >
                 Save Availability Settings
@@ -443,7 +484,7 @@ const DoctorDashboard = () => {
                     {!editMode ? (
                       <>
                         <p className="text-sm"><span className="font-semibold text-slate-700">Experience:</span> {profile?.experienceYears} years</p>
-                        <p className="text-sm mt-2"><span className="font-semibold text-slate-700">Consultation Fee:</span> Rs. {profile?.consultationFee || 0}</p>
+                        <p className="text-sm mt-2"><span className="font-semibold text-slate-700">Consultation Fee:</span> {formatConsultationFee(profile?.consultationFee)}</p>
                       </>
                     ) : (
                       <div className="space-y-3">

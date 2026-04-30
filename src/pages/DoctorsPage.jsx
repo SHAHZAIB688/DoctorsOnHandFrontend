@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import client, { buildBackendAssetUrl } from "../api/client";
-import Dropdown from "../components/Dropdown";
+import Loader from "../components/Loader";
+import SearchInput from "../components/SearchInput";
+import CategoryDropdown from "../components/CategoryDropdown";
+import SearchButton from "../components/SearchButton";
 
 const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
@@ -10,6 +13,9 @@ const DoctorsPage = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [experience, setExperience] = useState("All");
+  const [availability, setAvailability] = useState("All");
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -31,6 +37,21 @@ const DoctorsPage = () => {
     if (category !== "All") {
       result = result.filter(doc => doc.specialization === category);
     }
+    if (experience !== "All") {
+      result = result.filter(doc => {
+        const years = doc.experienceYears || 5;
+        if (experience === "0-5") return years <= 5;
+        if (experience === "6-10") return years > 5 && years <= 10;
+        if (experience === "10+") return years > 10;
+        return true;
+      });
+    }
+    if (availability !== "All") {
+      result = result.filter(doc => {
+        // This would need to be implemented based on actual availability data
+        return true; // Placeholder for now
+      });
+    }
     if (search) {
       result = result.filter(doc =>
         doc.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -38,55 +59,118 @@ const DoctorsPage = () => {
       );
     }
     setFilteredDoctors(result);
-  }, [search, category, doctors]);
+  }, [search, category, experience, availability, doctors]);
 
-  const categories = ["All", ...new Set(doctors.map(doc => doc.specialization))];
+  const ALL_SPECIALIZATIONS = [
+  "All",
+  "Cardiologist",
+  "Dermatologist",
+  "Neurologist",
+  "Orthopedic",
+  "Pediatrician",
+  "General Physician",
+  "Gynecologist",
+  "Ophthalmologist",
+  "ENT Specialist",
+  "Psychiatrist",
+  "Oncologist",
+  "Endocrinologist",
+  "Gastroenterologist",
+  "Pulmonologist",
+  "Rheumatologist",
+  "Nephrologist",
+  "Urologist",
+  "Anesthesiologist",
+  "Radiologist",
+  "Pathologist"
+];
+
+const categories = ["All", ...new Set(doctors.map(doc => doc.specialization))];
+  
+  const EXPERIENCE_OPTIONS = ["All", "0-5", "6-10", "10+"];
+  const AVAILABILITY_OPTIONS = [
+    "All",
+    "Monday",
+    "Tuesday", 
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+    "Available Today",
+    "Available This Week",
+    "Weekend Only"
+  ];
+
+  
+  const handleSearch = () => {
+    setSearchLoading(true);
+    // Simulate search delay
+    setTimeout(() => {
+      setSearchLoading(false);
+    }, 500);
+  };
+
+  const resetFilters = () => {
+    setSearch("");
+    setCategory("All");
+    setExperience("All");
+    setAvailability("All");
+  };
 
   return (
     <div className="space-y-8 pb-12">
-      <section className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between pt-4">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Find Your Specialist</h1>
-          <p className="mt-2 text-slate-600">Search through our verified network of expert doctors.</p>
-        </div>
-        <div className="flex w-full max-w-4xl flex-col gap-0 overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-xl shadow-slate-200/50 sm:flex-row sm:items-center">
-          <div className="relative flex-1 group">
-            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-600 transition-colors">
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              placeholder="Search by name, specialty or clinic..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-transparent py-5 pl-14 pr-5 text-sm font-medium outline-none placeholder:text-slate-400"
-            />
-          </div>
+      {/* Header Section */}
+      <section className="mb-8 flex flex-col gap-2 justify-center items-center">
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Find Your Specialist</h1>
+        <p className="mt-2 text-slate-600">Search through our verified network of expert doctors.</p>
+      </section>
 
-          <div className="hidden h-8 w-px bg-slate-100 sm:block" />
+      {/* Search and Filter Section - Single Row */}
+      <section className="mb-6">
+        <div className="flex flex-wrap items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+          <SearchInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, specialty or clinic..."
+            className="flex-1 min-w-[200px]"
+          />
+          
+          <CategoryDropdown
+            value={experience}
+            onChange={setExperience}
+            options={EXPERIENCE_OPTIONS}
+            placeholder="Experience"
+            className="w-32 rounded-lg bg-white hover:border-brand-300 transition-colors"
+          />
+          
+          <CategoryDropdown
+            value={availability}
+            onChange={setAvailability}
+            options={AVAILABILITY_OPTIONS}
+            placeholder="Availability"
+            className="w-36 rounded-lg bg-white hover:border-brand-300 transition-colors"
+          />
 
-          <div className="min-w-[220px]">
-            <Dropdown
-              options={categories}
-              value={category}
-              onChange={setCategory}
-              placeholder="All Specialties"
-              className="px-5 py-2 border-none"
-            />
-          </div>
-
-          <button className="hidden bg-brand-600 px-8 py-5 text-sm font-bold text-white transition-all hover:bg-brand-700 sm:block">
-            Search
+          <button
+            onClick={resetFilters}
+            className="px-3 py-2.5 text-sm font-medium text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors whitespace-nowrap border border-slate-200"
+          >
+            Reset
           </button>
+
+          <SearchButton
+            onClick={handleSearch}
+            loading={searchLoading}
+            className="px-4"
+          />
         </div>
       </section>
 
       {loading ? (
         <div className="flex h-80 items-center justify-center rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col items-center gap-4">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600" />
+            <Loader />
             <p className="text-sm font-medium text-slate-500">Fetching verified doctors...</p>
           </div>
         </div>
@@ -97,12 +181,7 @@ const DoctorsPage = () => {
           </div>
           <h3 className="text-2xl font-bold text-slate-900">No doctors match your criteria</h3>
           <p className="mt-3 text-slate-500 max-w-md mx-auto">We couldn't find any specialists matching your search. Try changing the category or clearing your search.</p>
-          <button
-            onClick={() => { setSearch(""); setCategory("All"); }}
-            className="mt-8 rounded-xl bg-slate-100 px-6 py-2.5 text-sm font-bold text-slate-900 hover:bg-slate-200 transition-colors"
-          >
-            Reset Filters
-          </button>
+          
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
