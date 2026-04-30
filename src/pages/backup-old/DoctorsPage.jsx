@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import client, { buildBackendAssetUrl } from "../api/client";
-import Loader from "../components/Loader";
-import SearchInput from "../components/SearchInput";
-import CategoryDropdown from "../components/CategoryDropdown";
-import SearchButton from "../components/SearchButton";
+import client, { buildBackendAssetUrl } from "../../api/client";
+import Loader from "../../components/Loader";
+import SearchInput from "../../components/SearchInput";
+import CategoryDropdown from "../../components/CategoryDropdown";
+import SearchButton from "../../components/SearchButton";
 
 const DoctorsPage = () => {
   const [doctors, setDoctors] = useState([]);
@@ -221,8 +221,8 @@ const categories = ["All", ...new Set(doctors.map(doc => doc.specialization))];
                 </div>
 
                 <div className="mt-auto pt-6">
-                  <Link to="/dashboard" className="flex items-center justify-center gap-2 w-full rounded-2xl bg-brand-600 py-4 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:bg-brand-700 active:scale-[0.98] group-hover:shadow-brand-200">
-                    Book Appointment
+                  <Link to={`/doctors/${doctor._id}`} className="flex items-center justify-center gap-2 w-full rounded-2xl bg-brand-600 py-4 text-sm font-bold text-white shadow-lg transition-all duration-300 hover:bg-brand-700 active:scale-[0.98] group-hover:shadow-brand-200">
+                    View Details
                     <span className="transition-transform group-hover:translate-x-1">→</span>
                   </Link>
                 </div>
@@ -236,3 +236,4 @@ const categories = ["All", ...new Set(doctors.map(doc => doc.specialization))];
 };
 
 export default DoctorsPage;
+

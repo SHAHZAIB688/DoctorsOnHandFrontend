@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
+import AboutOfferList from "./components/AboutOfferList";
 
 const AboutPage = () => {
   return (
     <div className="space-y-16 pb-12">
-      {/* Hero Section */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-700 via-brand-600 to-cyan-600 px-6 py-16 text-white shadow-xl lg:px-12">
         <div className="relative z-10 max-w-3xl">
           <h1 className="text-4xl font-bold tracking-tight md:text-5xl">About Prescripto</h1>
@@ -15,7 +15,6 @@ const AboutPage = () => {
         <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
       </section>
 
-      {/* Main Content */}
       <div className="grid gap-12 lg:grid-cols-2">
         <section className="space-y-6">
           <h2 className="text-3xl font-bold text-slate-900">Our Journey</h2>
@@ -32,42 +31,19 @@ const AboutPage = () => {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <h2 className="mb-6 text-2xl font-bold text-slate-900">What We Offer</h2>
-          <ul className="space-y-4">
-            {[
-              "Easy and quick online appointment booking",
-              "Access to verified and experienced doctors",
-              "Multiple medical specialties in one platform",
-              "Secure and user-friendly interface",
-              "Time-saving and hassle-free experience"
-            ].map((offer, i) => (
-              <li key={i} className="flex items-start gap-3 text-slate-600">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-100 text-xs font-bold text-brand-600">
-                  ✓
-                </span>
-                {offer}
-              </li>
-            ))}
-          </ul>
-        </section>
+        <AboutOfferList />
       </div>
 
-      {/* Vision & Mission */}
       <section className="grid gap-8 md:grid-cols-2">
         <div className="rounded-3xl bg-slate-900 p-10 text-white shadow-xl">
-          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500 text-2xl">
-            👁️
-          </div>
+          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-500 text-2xl">👁️</div>
           <h2 className="text-2xl font-bold">Our Vision</h2>
           <p className="mt-4 text-slate-300 leading-relaxed">
             Our vision is to become a trusted digital healthcare partner by making medical services accessible to everyone, anytime and anywhere.
           </p>
         </div>
         <div className="rounded-3xl bg-brand-600 p-10 text-white shadow-xl">
-          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-2xl">
-            🚀
-          </div>
+          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-2xl">🚀</div>
           <h2 className="text-2xl font-bold">Our Mission</h2>
           <p className="mt-4 text-brand-50 leading-relaxed">
             Our mission is to improve patient experience by providing a smart, reliable, and efficient healthcare booking system that connects people with the right medical professionals without delay.
@@ -75,7 +51,6 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="text-center py-10">
         <h2 className="text-2xl font-bold text-slate-900">Ready to book your first appointment?</h2>
         <div className="mt-6 flex justify-center gap-4">

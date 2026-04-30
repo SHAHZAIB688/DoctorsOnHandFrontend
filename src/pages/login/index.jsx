@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import LogoImg from "../assets/logo2.jpeg";
-import { useAuth } from "../state/AuthContext";
-import Loader from "../components/Loader";
+import LogoImg from "../../assets/logo2.jpeg";
+import { useAuth } from "../../state/AuthContext";
+import AuthBrandPanel from "../auth/components/AuthBrandPanel";
 
 const LoginPage = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -30,36 +30,8 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 sm:p-6 md:p-12">
       <div className="flex w-full max-w-4xl flex-col overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] md:rounded-[2.5rem] bg-white shadow-2xl md:flex-row min-h-fit">
-        {/* Left Side - Brand Panel */}
-        <div className="relative flex w-full flex-col justify-between bg-[#2e324d] p-6 sm:p-8 text-white md:w-[40%] lg:p-10">
-          <div className="relative z-10">
-            <div className="flex items-center gap-3">
-              <img src={LogoImg} alt="Logo" className="h-10 w-10 rounded-xl bg-white/10 p-1" />
-              <div>
-                <h2 className="text-xl font-bold tracking-tight">Prescripto</h2>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400">Slogan here</p>
-              </div>
-            </div>
-          </div>
+        <AuthBrandPanel logoSrc={LogoImg} />
 
-          <div className="relative z-10 space-y-4 my-10">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight">
-              Start our <br /> journey
-            </h1>
-            <p className="text-[10px] sm:text-xs leading-relaxed text-slate-400">
-              Join thousands of healthcare professionals and patients who trust Prescripto for their medical appointments.
-            </p>
-          </div>
-
-          <div className="relative z-10">
-            <div className="h-1 w-12 rounded-full bg-brand-500" />
-          </div>
-
-          <div className="absolute -right-20 top-1/4 h-64 w-64 rounded-full bg-brand-500/10 blur-[100px]" />
-          <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-cyan-500/10 blur-[100px]" />
-        </div>
-
-        {/* Right Side - Form Panel */}
         <div className="flex w-full flex-col justify-center px-6 sm:px-8 md:px-12 py-6 sm:py-8 md:w-[60%]">
           <div className="mb-6">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Sign In</h2>
@@ -103,7 +75,9 @@ const LoginPage = () => {
           <div className="mt-6 sm:mt-8 text-center text-sm font-medium text-slate-500">
             <p>
               Not a member?{" "}
-              <Link to="/signup" className="font-bold text-brand-600 hover:underline">Sign Up</Link>
+              <Link to="/signup" className="font-bold text-brand-600 hover:underline">
+                Sign Up
+              </Link>
             </p>
           </div>
         </div>

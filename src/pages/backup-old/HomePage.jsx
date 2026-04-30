@@ -1,19 +1,57 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import client, { buildBackendAssetUrl } from "../api/client";
-import Loader from "../components/Loader";
+import client, { buildBackendAssetUrl } from "../../api/client";
+import Loader from "../../components/Loader";
+import WhyChooseUsSection from "../../components/WhyChooseUsSection";
 
-// Format consultation fee display
+const TOP_SPECIALITIES = [
+  "Cardiologist",
+  "Dermatologist",
+  "Neurologist",
+  "Pediatrician",
+  "General Physician",
+  "Gynecologist",
+];
+
+const HOW_IT_WORKS_STEPS = [
+  { title: "Search Doctors", text: "Browse specialists by category, reviews, and availability." },
+  { title: "View Profile", text: "Open detailed doctor profile with fees, bio, and patient feedback." },
+  { title: "Book Appointment", text: "Select a date and available slot in seconds." },
+  { title: "Consult & Follow Up", text: "Complete consultation and manage reports with reminders." },
+];
+
+const FAQ_ITEMS = [
+  {
+    q: "How do I book an appointment?",
+    a: "Go to Doctors, open a doctor's detail page, choose date/time slot, and confirm booking.",
+  },
+  {
+    q: "Are doctors verified on Prescripto?",
+    a: "Yes, listed doctors are verified before they become available for patient booking.",
+  },
+  {
+    q: "Can I pay online for consultations?",
+    a: "Yes, Stripe checkout is integrated for secure online consultation payments.",
+  },
+  {
+    q: "Can I update my health summary anytime?",
+    a: "Yes, patient dashboard includes a Health Summary tab where you can edit details anytime.",
+  },
+];
+
 const formatConsultationFee = (fee) => {
   if (!fee || fee === 0) return "Free";
   return `Rs. ${fee}`;
 };
 
 const HomePage = () => {
-  const [doctors, setDoctors] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
+  const [doctors, setDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   const heroImages = [
     "https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&w=900&q=80",
@@ -33,18 +71,27 @@ const HomePage = () => {
     const fetchDoctors = async () => {
       try {
         const { data } = await client.get("/doctors");
-        setDoctors(data || []);
+        setDoctors(Array.isArray(data) ? data : []);
       } catch (error) {
-        toast.error("Unable to load doctors");
+        toast.error("Unable to load featured doctors");
       } finally {
-        setLoading(false);
+        setLoadingDoctors(false);
       }
     };
     fetchDoctors();
   }, []);
 
+  const featuredDoctors = useMemo(() => doctors.slice(0, 3), [doctors]);
+
+  const submitSearch = (e) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    navigate(q ? `/doctors?search=${encodeURIComponent(q)}` : "/doctors");
+  };
+
   return (
     <div className="space-y-16 pb-8">
+      {/* Hero Section */}
       <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-brand-700 via-brand-600 to-cyan-600 px-6 py-12 text-white shadow-xl lg:px-12">
         <div className="grid items-center gap-8 lg:grid-cols-2">
           <div>
@@ -74,26 +121,77 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section id="doctors" className="space-y-6">
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">Find Top Doctors</h2>
-            <p className="mt-1 text-sm text-slate-600">Browse verified specialists and book instantly.</p>
-          </div>
-        </div>
+      {/* Search Bar */}
+      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+        <form onSubmit={submitSearch} className="flex flex-col gap-3 md:flex-row">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search doctors by name or speciality..."
+            className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+          />
+          <button
+            type="submit"
+            className="rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700"
+          >
+            Search Doctors
+          </button>
+        </form>
+      </section>
 
-        {loading ? (
+      {/* Top Specialities */}
+      <section className="space-y-5">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">Top Specialities</h2>
+          <p className="mt-1 text-sm text-slate-600">Explore common healthcare specialities quickly.</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {TOP_SPECIALITIES.map((speciality) => (
+            <Link
+              key={speciality}
+              to="/doctors"
+              className="rounded-2xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:text-brand-700 hover:shadow"
+            >
+              {speciality}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Why Choose Us */}
+      <WhyChooseUsSection />
+
+      {/* How It Works */}
+      <section className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">How It Works</h2>
+          <p className="mt-1 text-sm text-slate-600">Get appointment-ready in four simple steps.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {HOW_IT_WORKS_STEPS.map((step, index) => (
+            <article key={step.title} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-brand-600">Step {index + 1}</p>
+              <h3 className="mt-1 text-base font-semibold text-slate-900">{step.title}</h3>
+              <p className="mt-1 text-sm text-slate-600">{step.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* Featured Doctors */}
+      <section className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">Featured Doctors</h2>
+          <p className="mt-1 text-sm text-slate-600">Meet our most trusted specialists.</p>
+        </div>
+        {loadingDoctors ? (
           <div className="flex h-40 items-center justify-center rounded-2xl border border-slate-200 bg-white">
             <Loader />
           </div>
-        ) : doctors.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-            <h3 className="text-lg font-semibold text-slate-900">No doctors found</h3>
-            <p className="mt-1 text-sm text-slate-500">Please check again later or update your filters.</p>
-          </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {doctors.map((doctor) => (
+            {featuredDoctors.map((doctor) => (
               <article key={doctor._id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
                 <img
                   src={doctor.image ? buildBackendAssetUrl(doctor.image) : `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(doctor.user?.name || "Doctor")}`}
@@ -103,12 +201,12 @@ const HomePage = () => {
                 <h3 className="mt-4 text-lg font-bold text-slate-900">Dr. {doctor.user?.name}</h3>
                 <p className="text-sm text-brand-700">{doctor.specialization}</p>
                 <div className="mt-3 space-y-1 text-sm text-slate-600">
-                  <p>Experience: {doctor.experienceYears || 5}+ years</p>
-                  <p>Rating: 4.8 / 5.0</p>
+                  <p>Experience: {doctor.experienceYears || 0} years</p>
+                  <p>Rating: {Number(doctor.averageRating || 0).toFixed(1)} / 5.0</p>
                   <p className="font-semibold text-brand-600">Fee: {formatConsultationFee(doctor.consultationFee)}</p>
                 </div>
-                <Link to="/dashboard" className="mt-4 inline-block w-full rounded-xl bg-brand-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-brand-700">
-                  Book Now
+                <Link to={`/doctors/${doctor._id}`} className="mt-4 inline-block w-full rounded-xl bg-brand-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-brand-700">
+                  View Details
                 </Link>
               </article>
             ))}
@@ -116,6 +214,7 @@ const HomePage = () => {
         )}
       </section>
 
+      {/* Testimonials */}
       <section className="space-y-12 py-10">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">What Our Patients Say</h2>
@@ -195,8 +294,51 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* FAQ */}
+      <section className="space-y-5 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">FAQ</h2>
+          <p className="mt-1 text-sm text-slate-600">Answers to common patient questions.</p>
+        </div>
+        <div className="space-y-3">
+          {FAQ_ITEMS.map((item, index) => {
+            const isOpen = openFaqIndex === index;
+            return (
+              <article key={item.q} className="overflow-hidden rounded-2xl border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setOpenFaqIndex(isOpen ? -1 : index)}
+                  className="flex w-full items-center justify-between bg-white px-4 py-3 text-left"
+                >
+                  <span className="text-sm font-semibold text-slate-900">{item.q}</span>
+                  <span className="text-lg text-slate-400">{isOpen ? "-" : "+"}</span>
+                </button>
+                {isOpen && <p className="border-t border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-600">{item.a}</p>}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Call To Action */}
+      <section className="rounded-3xl bg-gradient-to-r from-brand-700 via-brand-600 to-cyan-600 px-6 py-10 text-center text-white shadow-xl md:px-10">
+        <h2 className="text-2xl font-bold md:text-3xl">Ready to Book Your Next Consultation?</h2>
+        <p className="mt-2 text-sm text-cyan-50 md:text-base">
+          Join Prescripto and connect with trusted doctors in minutes.
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link to="/doctors" className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand-700 hover:bg-cyan-50">
+            Browse Doctors
+          </Link>
+          <Link to="/signup" className="rounded-xl border border-white/70 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10">
+            Create Account
+          </Link>
+        </div>
+      </section>
     </div>
   );
 };
 
 export default HomePage;
+

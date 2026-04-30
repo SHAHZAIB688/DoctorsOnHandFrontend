@@ -2,14 +2,15 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Loader from "./components/Loader";
-import HomePage from "./pages/HomePage";
-import SignupPage from "./pages/SignupPage";
-import LoginPage from "./pages/LoginPage";
-import ContactPage from "./pages/ContactPage";
-import DashboardPage from "./pages/DashboardPage";
-import AboutPage from "./pages/AboutPage";
-import TermsPage from "./pages/TermsPage";
-import DoctorsPage from "./pages/DoctorsPage";
+import HomePage from "./pages/home";
+import SignupPage from "./pages/signup";
+import LoginPage from "./pages/login";
+import ContactPage from "./pages/contact";
+import DashboardPage from "./pages/dashboard";
+import AboutPage from "./pages/about";
+import TermsPage from "./pages/terms";
+import DoctorsPage from "./pages/doctors";
+import DoctorDetailsPage from "./pages/doctor-details";
 
 const App = () => (
   <Layout>
@@ -21,6 +22,7 @@ const App = () => (
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/doctors" element={<DoctorsPage />} />
+      <Route path="/doctors/:doctorId" element={<DoctorDetailsPage />} />
       <Route
         path="/dashboard"
         element={(
