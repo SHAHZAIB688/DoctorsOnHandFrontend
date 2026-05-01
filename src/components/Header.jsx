@@ -18,8 +18,8 @@ const Header = () => {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 lg:px-8">
         <div className="flex items-center gap-2">
-          <img src={LogoImg} alt="Prescripto Logo" className="h-10 w-10 rounded-lg" />
-          <Link to="/" className="text-xl font-extrabold tracking-tight text-brand-700">Prescripto</Link>
+          <img src={LogoImg} alt="Perscripto Logo" className="h-10 w-10 rounded-lg" />
+          <Link to="/" className="text-xl font-extrabold tracking-tight text-brand-700">Perscripto</Link>
         </div>
         <nav className="hidden items-center gap-7 md:flex">
           <NavLink className="text-sm font-medium text-slate-600 hover:text-brand-700" to="/" end>Home</NavLink>

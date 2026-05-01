@@ -1,7 +1,7 @@
 const OFFERS = [
-  "Easy and quick online appointment booking",
+  "Easy and quick online doctor booking",
   "Access to verified and experienced doctors",
-  "Multiple medical specialties in one platform",
+  "Multiple service categories in one platform",
   "Secure and user-friendly interface",
   "Time-saving and hassle-free experience",
 ];

@@ -27,32 +27,32 @@ const FeeIcon = () => (
 const features = [
   {
     title: "Verified Doctors",
-    description: "All specialists are verified so patients can book with confidence.",
+    description: "All listed doctors are verified so patients can book with confidence.",
     icon: DoctorIcon,
   },
   {
-    title: "Easy Appointment Booking",
-    description: "Book appointments in a few clicks with a smooth and simple flow.",
+    title: "Easy Service Booking",
+    description: "Book services in a few clicks with a smooth and simple flow.",
     icon: AppointmentIcon,
   },
   {
     title: "24/7 Support",
-    description: "Get help anytime for booking, account, and consultation issues.",
+    description: "Get help anytime for booking, account, and service issues.",
     icon: SupportIcon,
   },
   {
-    title: "Secure Medical Records",
-    description: "Patient data and medical records are protected with secure handling.",
+    title: "Secure Job Records",
+    description: "User data and service records are protected with secure handling.",
     icon: ShieldIcon,
   },
   {
-    title: "Online Consultation",
-    description: "Consult doctors remotely and manage care from your home.",
+    title: "Online Coordination",
+    description: "Coordinate jobs remotely and manage service updates from your home.",
     icon: FileIcon,
   },
   {
-    title: "Affordable Fees",
-    description: "Transparent and reasonable consultation fees for quality care.",
+    title: "Affordable Rates",
+    description: "Transparent and reasonable service rates for quality work.",
     icon: FeeIcon,
   },
 ];
@@ -67,9 +67,9 @@ const WhyChooseUsSection = () => {
   return (
     <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">Why Patients Choose Prescripto</h2>
+        <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">Why Patients Choose Perscripto</h2>
         <p className="mt-2 text-sm text-slate-600 md:text-base">
-          Trusted healthcare platform for fast and secure doctor appointments.
+          Trusted platform for fast and secure doctor bookings.
         </p>
       </div>
 

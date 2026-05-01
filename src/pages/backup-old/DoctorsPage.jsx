@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import client, { buildBackendAssetUrl } from "../../api/client";
+import patient, { buildBackendAssetUrl } from "../../api/client";
 import Loader from "../../components/Loader";
 import SearchInput from "../../components/SearchInput";
 import CategoryDropdown from "../../components/CategoryDropdown";
@@ -20,7 +20,7 @@ const DoctorsPage = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const { data } = await client.get("/doctors");
+        const { data } = await patient.get("/doctors");
         setDoctors(data || []);
         setFilteredDoctors(data || []);
       } catch (error) {

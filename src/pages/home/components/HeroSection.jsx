@@ -4,10 +4,10 @@ const HeroSection = ({ heroImages, currentImage }) => (
   <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-brand-700 via-brand-600 to-cyan-600 px-6 py-12 text-white shadow-xl lg:px-12">
     <div className="grid items-center gap-8 lg:grid-cols-2">
       <div>
-        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-cyan-100">Trusted Digital Care</p>
-        <h1 className="text-3xl font-bold leading-tight md:text-5xl">Book Appointments with Trusted Doctors</h1>
+        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-cyan-100">Trusted Healthcare Network</p>
+        <h1 className="text-3xl font-bold leading-tight md:text-5xl">Book Trusted Doctors in Minutes</h1>
         <p className="mt-4 max-w-xl text-base text-cyan-50 md:text-lg">
-          Find specialists, book in seconds, and stay updated with secure healthcare reminders and notifications.
+          Find experienced doctors, book appointments in seconds, and stay updated with secure reminders and notifications.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link to="/doctors" className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand-700 shadow hover:bg-cyan-50">

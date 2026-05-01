@@ -17,15 +17,18 @@ import {
   Area,
 } from "recharts";
 import toast from "react-hot-toast";
-import client, { buildBackendAssetUrl } from "../../api/client";
+import patient, { buildBackendAssetUrl } from "../../api/client";
 import DashboardShell from "../../components/DashboardShell";
-import { AppointmentIcon, DashboardIcon, DoctorIcon, FileIcon, UsersIcon } from "../../components/icons";
+import AccountProfileForm from "../../components/AccountProfileForm";
+import { AppointmentIcon, DashboardIcon, DoctorIcon, FileIcon, SettingsIcon, UsersIcon } from "../../components/icons";
 import Loader from "../../components/Loader";
+import { useAuth } from "../../state/AuthContext";
 import AdminStatsCards from "./components/AdminStatsCards";
 
 const COLORS = ["#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#9333ea"];
 
 const AdminDashboard = () => {
+  const { refreshUser } = useAuth();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -44,11 +47,11 @@ const AdminDashboard = () => {
         { data: approvedDoctorsData },
         { data: appointmentsData },
       ] = await Promise.all([
-        client.get("/admin/stats"),
-        client.get("/admin/users"),
-        client.get("/admin/doctor-applications"),
-        client.get("/admin/approved-doctors"),
-        client.get("/admin/appointments"),
+        patient.get("/admin/stats"),
+        patient.get("/admin/users"),
+        patient.get("/admin/doctor-applications"),
+        patient.get("/admin/approved-doctors"),
+        patient.get("/admin/appointments"),
       ]);
       setStats(statData);
       setUsers(usersData);
@@ -69,15 +72,36 @@ const AdminDashboard = () => {
 
   const updateApplicationStatus = async (id, status) => {
     if (!window.confirm(`Are you sure you want to ${status} this doctor?`)) return;
-    await client.patch(`/admin/doctor-applications/${id}/status`, { status });
+    await patient.patch(`/admin/doctor-applications/${id}/status`, { status });
     toast.success(`Application ${status}`);
     load();
   };
 
   const blockDoctor = async (id) => {
     if (!window.confirm("Block this approved doctor?")) return;
-    await client.patch(`/admin/approved-doctors/${id}/block`);
+    await patient.patch(`/admin/approved-doctors/${id}/block`);
     toast.success("Doctor blocked");
+    load();
+  };
+
+  const suspendDoctor = async (id) => {
+    const hoursRaw = window.prompt("Temporary suspend duration (hours). Example: 24", "24");
+    if (hoursRaw === null) return;
+    const hours = Number(hoursRaw);
+    if (!Number.isFinite(hours) || hours <= 0) {
+      toast.error("Invalid hours value");
+      return;
+    }
+    const reason = window.prompt("Reason (optional)", "Temporarily suspended");
+    await patient.patch(`/admin/approved-doctors/${id}/suspend`, { hours, reason: reason || "" });
+    toast.success("Doctor temporarily suspended");
+    load();
+  };
+
+  const unsuspendDoctor = async (id) => {
+    if (!window.confirm("Remove temporary suspension for this doctor?")) return;
+    await patient.patch(`/admin/approved-doctors/${id}/unsuspend`);
+    toast.success("Doctor suspension removed");
     load();
   };
 
@@ -113,14 +137,15 @@ const AdminDashboard = () => {
     return months;
   }, [applications, approvedDoctors]);
 
-  const coreStatsCards = useMemo(
-    () => [
-      { label: "Total Revenue", value: `$${stats?.totalRevenue ?? 0}`, icon: FileIcon },
+  const coreStatsCards = useMemo(() => {
+    const pct = stats?.commissionRatePercent ?? 20;
+    return [
+      { label: "Total booking revenue", value: `PKR ${stats?.totalRevenue ?? 0}`, icon: FileIcon },
+      { label: `Platform commission (${pct}%)`, value: `PKR ${stats?.platformCommission ?? 0}`, icon: FileIcon },
       { label: "Active Doctors", value: stats?.activeDoctors ?? 0, icon: DoctorIcon },
       { label: "Inactive Doctors", value: stats?.inactiveDoctors ?? 0, icon: DoctorIcon },
-    ],
-    [stats]
-  );
+    ];
+  }, [stats]);
 
   const appointmentDonutData = useMemo(() => {
     const base = stats?.statusAnalytics || [];
@@ -152,7 +177,8 @@ const AdminDashboard = () => {
         { id: "applications", label: "Doctor Applications", icon: FileIcon, hasNotification: applications.some((a) => a.status === "pending") },
         { id: "approved", label: "Doctors (Approved)", icon: DoctorIcon },
         { id: "users", label: "Users", icon: UsersIcon },
-        { id: "appointments", label: "Appointments", icon: AppointmentIcon },
+        { id: "appointments", label: "Bookings", icon: AppointmentIcon },
+        { id: "settings", label: "Settings", icon: SettingsIcon },
       ]}
     >
       {(activeTab) => (
@@ -169,7 +195,7 @@ const AdminDashboard = () => {
 
               <section className="grid gap-4 lg:grid-cols-3">
                 <article className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="mb-4 text-lg font-semibold text-slate-900">Appointment</h3>
+                  <h3 className="mb-4 text-lg font-semibold text-slate-900">Bookings</h3>
                   <div className="relative flex-1" style={{ minHeight: 260 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart key={`status-${chartKey}`}>
@@ -196,7 +222,7 @@ const AdminDashboard = () => {
 
                 <article className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-slate-900">Assiduity</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Verification Ratio</h3>
                   </div>
                   <div className="mb-4 flex items-center gap-4 text-sm">
                     <span className="inline-flex items-center gap-1">
@@ -289,16 +315,16 @@ const AdminDashboard = () => {
                     </div>
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
                       <span>Availability</span>
-                      <b>{stats.doctorPerformance?.doctorAvailabilityStatus?.availableDoctors ?? 0} Available</b>
+                      <b>{stats.doctorPerformance?.doctorAvailabilityStatus?.availableDoctors ?? 0} Doctors Available</b>
                     </div>
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>Pending Verifications</span>
+                      <span>Pending Doctor Verifications</span>
                       <b>{stats.doctorPerformance?.pendingDoctorVerifications ?? 0}</b>
                     </div>
                     {(stats.doctorPerformance?.topPerformingDoctors || []).slice(0, 3).map((doc) => (
                       <div key={doc.doctorId} className="flex justify-between rounded-lg bg-slate-100 p-2">
                         <span>{doc.name}</span>
-                        <b>{doc.count} appts</b>
+                        <b>{doc.count} jobs</b>
                       </div>
                     ))}
                   </div>
@@ -307,7 +333,7 @@ const AdminDashboard = () => {
 
               <section className="grid gap-4 xl:grid-cols-2">
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-lg font-semibold text-slate-900">Monthly Appointment Trend</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Monthly Booking Trend</h3>
                   <div style={{ width: "100%", height: 250 }}>
                     <ResponsiveContainer>
                       <LineChart data={stats.monthlyAppointmentTrend || []}>
@@ -339,13 +365,13 @@ const AdminDashboard = () => {
 
               <section className="grid gap-4 xl:grid-cols-3">
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-base font-semibold text-slate-900">Appointment Insights</h3>
+                  <h3 className="text-base font-semibold text-slate-900">Booking Insights</h3>
                   <div className="mt-3 space-y-2 text-sm">
                     <p className="rounded-lg bg-slate-100 p-2">
                       Peak Booking Hours: <b>{stats.appointmentInsights?.peakBookingHour || "N/A"}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Most Booked Specialization: <b>{stats.appointmentInsights?.mostBookedSpecialization || "N/A"}</b>
+                      Most Booked Category: <b>{stats.appointmentInsights?.mostBookedSpecialization || "N/A"}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
                       Avg Duration: <b>{stats.appointmentInsights?.averageAppointmentDuration || 0} mins</b>
@@ -357,10 +383,21 @@ const AdminDashboard = () => {
                   <h3 className="text-base font-semibold text-slate-900">Financial Stats</h3>
                   <div className="mt-3 space-y-2 text-sm">
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Daily Earnings: <b>${stats.financialStats?.dailyEarnings || 0}</b>
+                      Total booking revenue: <b>PKR {stats?.totalRevenue ?? 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Monthly Earnings: <b>${stats.financialStats?.monthlyEarnings || 0}</b>
+                      Platform commission ({stats?.commissionRatePercent ?? 20}%):{" "}
+                      <b>PKR {stats.financialStats?.platformCommission ?? stats?.platformCommission ?? 0}</b>
+                    </p>
+                    <p className="rounded-lg bg-slate-100 p-2">
+                      Doctor payouts ({100 - (stats?.commissionRatePercent ?? 20)}%):{" "}
+                      <b>PKR {stats.financialStats?.doctorPayoutTotal ?? stats?.doctorPayoutTotal ?? 0}</b>
+                    </p>
+                    <p className="rounded-lg bg-slate-100 p-2">
+                      Daily revenue (completed today): <b>PKR {stats.financialStats?.dailyEarnings || 0}</b>
+                    </p>
+                    <p className="rounded-lg bg-slate-100 p-2">
+                      Monthly revenue (completed this month): <b>PKR {stats.financialStats?.monthlyEarnings || 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
                       Cash / Online: <b>{stats.financialStats?.paymentMethods?.cash || 0}/{stats.financialStats?.paymentMethods?.online || 0}</b>
@@ -404,8 +441,8 @@ const AdminDashboard = () => {
                       <tr>
                         <th className="px-4 py-3">Name</th>
                         <th className="px-4 py-3">Email</th>
-                        <th className="px-4 py-3">Specialization</th>
-                        <th className="px-4 py-3">Degree File</th>
+                        <th className="px-4 py-3">Service Category</th>
+                        <th className="px-4 py-3">Certification File</th>
                         <th className="px-4 py-3">Status</th>
                         <th className="px-4 py-3">Actions</th>
                       </tr>
@@ -452,7 +489,7 @@ const AdminDashboard = () => {
                     <tr>
                       <th className="px-4 py-3">Name</th>
                       <th className="px-4 py-3">Email</th>
-                      <th className="px-4 py-3">Specialization</th>
+                      <th className="px-4 py-3">Service Category</th>
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3">Action</th>
                     </tr>
@@ -464,12 +501,44 @@ const AdminDashboard = () => {
                         <td className="px-4 py-3">{item.user?.email}</td>
                         <td className="px-4 py-3">{item.specialization}</td>
                         <td className="px-4 py-3">
-                          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">approved</span>
+                          {item.user?.status === "suspended" ? (
+                            <div className="space-y-1">
+                              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">temporarily suspended</span>
+                              {item.user?.suspendedUntil && (
+                                <p className="text-[11px] text-slate-500">until {new Date(item.user.suspendedUntil).toLocaleString()}</p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">approved</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
-                          <button type="button" className="rounded bg-rose-600 px-2 py-1 text-xs font-semibold text-white" onClick={() => blockDoctor(item._id)}>
-                            Block
-                          </button>
+                          <div className="flex flex-wrap gap-2">
+                            {item.user?.status === "suspended" ? (
+                              <button
+                                type="button"
+                                className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white"
+                                onClick={() => unsuspendDoctor(item._id)}
+                              >
+                                Remove suspend
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className="rounded bg-amber-600 px-2 py-1 text-xs font-semibold text-white"
+                                onClick={() => suspendDoctor(item._id)}
+                              >
+                                Temp block
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="rounded bg-rose-600 px-2 py-1 text-xs font-semibold text-white"
+                              onClick={() => blockDoctor(item._id)}
+                            >
+                              Perm block
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -505,9 +574,18 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {!loading && activeTab === "settings" && (
+            <AccountProfileForm
+              refreshUser={refreshUser}
+              title="Admin settings"
+              description="Update your administrator name, email, phone, and password."
+              idPrefix="admin-acct"
+            />
+          )}
+
           {!loading && activeTab === "appointments" && (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Appointments</h3>
+              <h3 className="text-lg font-semibold text-slate-900">Bookings</h3>
               <div className="mt-4 overflow-x-auto">
                 <table className="min-w-full text-left text-sm">
                   <thead className="bg-slate-100 text-slate-700">

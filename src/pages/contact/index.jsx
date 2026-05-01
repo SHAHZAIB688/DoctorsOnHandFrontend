@@ -15,7 +15,7 @@ const ContactPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    const whatsappMsg = `Hi Prescripto Team! \n\nI am *${form.name}*.\n*Email:* ${form.email}\n*Subject:* ${form.subject}\n\n*Message:* ${form.message}`;
+    const whatsappMsg = `Hi Perscripto Team! \n\nI am *${form.name}*.\n*Email:* ${form.email}\n*Subject:* ${form.subject}\n\n*Message:* ${form.message}`;
     const whatsappUrl = `https://wa.me/923081830956?text=${encodeURIComponent(whatsappMsg)}`;
 
     setTimeout(() => {
@@ -38,7 +38,7 @@ const ContactPage = () => {
           </div>
           <h1 className="text-5xl font-extrabold tracking-tight md:text-6xl">Contact Us</h1>
           <p className="mt-6 text-lg leading-relaxed text-slate-300 md:text-xl">
-            Have questions about Prescripto? Our team is here to help you navigate your healthcare journey.
+            Have questions about Perscripto? Our team is here to help with appointments and account support.
           </p>
         </div>
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-brand-600/20 blur-[120px]" />
@@ -50,7 +50,7 @@ const ContactPage = () => {
           <div>
             <h2 className="text-3xl font-bold text-slate-900">How can we help?</h2>
             <p className="mt-4 text-slate-600 leading-relaxed">
-              Whether you're a patient looking for care or a doctor interested in joining our platform, we're ready to assist you.
+              Whether you are a patient looking for a trusted doctor or a professional interested in joining our platform, we are ready to assist you.
             </p>
           </div>
 
@@ -64,7 +64,7 @@ const ContactPage = () => {
               allowFullScreen=""
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              title="Prescripto Location"
+              title="Perscripto Location"
             ></iframe>
             <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[2rem]" />
           </div>

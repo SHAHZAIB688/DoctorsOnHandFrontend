@@ -5,7 +5,7 @@ const SearchBarSection = ({ searchQuery, setSearchQuery, onSubmit }) => (
         type="text"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search doctors by name or speciality..."
+        placeholder="Search doctors by name or service type..."
         className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
       />
       <button

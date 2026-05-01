@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import client, { buildBackendAssetUrl } from "../../api/client";
+import patient, { buildBackendAssetUrl } from "../../api/client";
 import Loader from "../../components/Loader";
 import DoctorBookingModal from "../../components/DoctorBookingModal";
 import { useAuth } from "../../state/AuthContext";
@@ -9,7 +9,7 @@ import DoctorReviewsSection from "./components/DoctorReviewsSection";
 
 const formatConsultationFee = (fee) => {
   if (!fee || fee === 0) return "Free";
-  return `Rs. ${fee}`;
+  return `PKR ${fee}`;
 };
 
 const DoctorDetailsPage = () => {
@@ -25,12 +25,12 @@ const DoctorDetailsPage = () => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const { data: doctorData } = await client.get(`/doctors/${doctorId}`);
+        const { data: doctorData } = await patient.get(`/doctors/${doctorId}`);
         setDoctor(doctorData);
 
         const doctorUserId = doctorData?.user?._id;
         if (doctorUserId) {
-          const { data: reviewsData } = await client.get(`/reviews/doctor/${doctorUserId}`);
+          const { data: reviewsData } = await patient.get(`/reviews/doctor/${doctorUserId}`);
           setReviews(Array.isArray(reviewsData) ? reviewsData : []);
         } else {
           setReviews([]);
@@ -48,12 +48,12 @@ const DoctorDetailsPage = () => {
 
   const openBooking = () => {
     if (!user) {
-      toast("Please login as patient to book an appointment.");
+      toast("Please login as patient to book a service.");
       navigate("/login");
       return;
     }
     if (user.role !== "patient") {
-      toast.error("Only patient accounts can book appointments.");
+      toast.error("Only patient accounts can book services.");
       return;
     }
     setBookingOpen(true);
@@ -87,7 +87,7 @@ const DoctorDetailsPage = () => {
 
           <div className="space-y-4 lg:col-span-2">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Dr. {doctor.user?.name}</h1>
+              <h1 className="text-3xl font-bold text-slate-900">{doctor.user?.name}</h1>
               <p className="mt-1 text-base font-semibold text-brand-700">{doctor.specialization}</p>
             </div>
 
@@ -97,7 +97,7 @@ const DoctorDetailsPage = () => {
                 <p className="mt-1 text-sm font-bold text-slate-800">{doctor.experienceYears || 0} years</p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Consultation Fee</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Service Rate</p>
                 <p className="mt-1 text-sm font-bold text-slate-800">{formatConsultationFee(doctor.consultationFee)}</p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -121,7 +121,7 @@ const DoctorDetailsPage = () => {
                 onClick={openBooking}
                 className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
               >
-                Book Appointment
+                Book Service
               </button>
               <Link
                 to="/doctors"

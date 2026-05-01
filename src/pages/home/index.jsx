@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import client from "../../api/client";
+import patient from "../../api/client";
 import WhyChooseUsSection from "../../components/WhyChooseUsSection";
 import HeroSection from "./components/HeroSection";
 import SearchBarSection from "./components/SearchBarSection";
@@ -13,7 +13,7 @@ import FaqSection from "./components/FaqSection";
 import CtaSection from "./components/CtaSection";
 import { HERO_IMAGES, TOP_SPECIALITIES, HOW_IT_WORKS_STEPS, FAQ_ITEMS, TESTIMONIALS } from "./components/HomeConstants";
 
-const formatConsultationFee = (fee) => (!fee || fee === 0 ? "Free" : `Rs. ${fee}`);
+const formatConsultationFee = (fee) => (!fee || fee === 0 ? "Free" : `PKR ${fee}`);
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const { data } = await client.get("/doctors");
+        const { data } = await patient.get("/doctors");
         setDoctors(Array.isArray(data) ? data : []);
       } catch (error) {
         toast.error("Unable to load featured doctors");

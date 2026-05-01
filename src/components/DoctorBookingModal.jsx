@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import client from "../api/client";
+import patient from "../api/client";
 
 const DoctorBookingModal = ({ doctor, onClose, onBooked }) => {
   const [form, setForm] = useState({ date: "", timeSlot: "", reason: "" });
@@ -17,7 +17,7 @@ const DoctorBookingModal = ({ doctor, onClose, onBooked }) => {
 
       setLoadingSlots(true);
       try {
-        const { data } = await client.get(`/doctors/available-slots/${doctor._id}`, {
+        const { data } = await patient.get(`/doctors/available-slots/${doctor._id}`, {
           params: { date: form.date },
         });
         setAvailableSlots(Array.isArray(data) ? data : []);
@@ -36,13 +36,13 @@ const DoctorBookingModal = ({ doctor, onClose, onBooked }) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await client.post("/appointments", {
+      await patient.post("/appointments", {
         doctorProfileId: doctor._id,
         date: form.date,
         timeSlot: form.timeSlot,
         reason: form.reason,
       });
-      toast.success("Appointment booked successfully");
+      toast.success("Service booked successfully");
       onBooked?.();
       onClose();
     } catch (error) {
@@ -66,8 +66,8 @@ const DoctorBookingModal = ({ doctor, onClose, onBooked }) => {
           </svg>
         </button>
 
-        <h3 className="text-2xl font-bold tracking-tight text-slate-900">Book Appointment</h3>
-        <p className="mt-1 text-sm text-slate-600">Dr. {doctor?.user?.name} - {doctor?.specialization}</p>
+        <h3 className="text-2xl font-bold tracking-tight text-slate-900">Book Service</h3>
+        <p className="mt-1 text-sm text-slate-600">{doctor?.user?.name} - {doctor?.specialization}</p>
 
         <form className="mt-5 grid gap-4" onSubmit={handleSubmit}>
           <input
@@ -116,7 +116,7 @@ const DoctorBookingModal = ({ doctor, onClose, onBooked }) => {
               disabled={submitting || !form.date || !form.timeSlot}
               className="w-full rounded-2xl bg-brand-600 py-3 text-base font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              {submitting ? "Booking..." : "Book Appointment"}
+              {submitting ? "Booking..." : "Book Service"}
             </button>
           </div>
         </form>

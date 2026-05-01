@@ -8,17 +8,17 @@ import Dropdown from "../../components/Dropdown";
 import AuthBrandPanel from "../auth/components/AuthBrandPanel";
 
 const SPECIALIZATIONS = [
-  "Cardiologist",
-  "Dermatologist",
-  "Neurologist",
-  "Orthopedic",
-  "Pediatrician",
-  "General Physician",
+  "Electrician",
+  "Plumber",
+  "Carpenter",
+  "Painter",
+  "HVAC Technician",
+  "General Technician",
 ];
 
 const ROLES = [
   { value: "patient", label: "Join as Patient" },
-  { value: "doctor", label: "Join as Healthcare Professional" },
+  { value: "doctor", label: "Join as Skilled Doctor" },
 ];
 
 const SignupPage = () => {
@@ -28,7 +28,7 @@ const SignupPage = () => {
     phone: "",
     password: "",
     role: "patient",
-    specialization: "General Physician",
+    specialization: "General Technician",
     experience: "",
     degreeFile: null,
   });
@@ -77,7 +77,7 @@ const SignupPage = () => {
       if (form.role === "doctor") {
         setShowVerificationModal(true);
       } else {
-        toast.success("Welcome to Prescripto");
+        toast.success("Welcome to Perscripto");
         navigate("/dashboard");
       }
     } catch (error) {
@@ -147,7 +147,7 @@ const SignupPage = () => {
                   options={SPECIALIZATIONS}
                   value={form.specialization}
                   onChange={(val) => onDropdownChange("specialization", val)}
-                  placeholder="Select Specialization"
+                  placeholder="Select Service Category"
                 />
                 <input
                   name="experience"

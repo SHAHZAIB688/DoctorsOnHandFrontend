@@ -4,7 +4,7 @@ const TopSpecialitiesSection = ({ specialities }) => (
   <section className="space-y-5">
     <div>
       <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">Top Specialities</h2>
-      <p className="mt-1 text-sm text-slate-600">Explore common healthcare specialities quickly.</p>
+      <p className="mt-1 text-sm text-slate-600">Explore common medical specialities quickly.</p>
     </div>
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {specialities.map((speciality) => (

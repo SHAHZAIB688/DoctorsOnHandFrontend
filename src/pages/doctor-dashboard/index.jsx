@@ -1,16 +1,19 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import client from "../../api/client";
+import patient from "../../api/client";
 import DashboardShell from "../../components/DashboardShell";
 import VerificationModal from "../../components/VerificationModal";
 import PrescriptionForm from "../../components/PrescriptionForm";
+import AccountProfileForm from "../../components/AccountProfileForm";
 import { DashboardIcon, AppointmentIcon, FileIcon, ProfileIcon, IconWrapper } from "../../components/icons";
 import Loader from "../../components/Loader";
+import { useAuth } from "../../state/AuthContext";
 import DoctorReplyModal from "./components/DoctorReplyModal";
 
 const WEEKDAY_OPTIONS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DEFAULT_SLOT = { start: "09:00", end: "17:00" };
+const PLATFORM_COMMISSION_RATE = 0.2;
 
 const convertTo12Hour = (time24) => {
   if (!time24) return "";
@@ -23,7 +26,7 @@ const convertTo12Hour = (time24) => {
 
 const formatConsultationFee = (fee) => {
   if (!fee || fee === 0) return "Free";
-  return `Rs. ${fee}`;
+  return `PKR ${fee}`;
 };
 
 const normalizeSingleAvailability = (slots = []) => {
@@ -44,6 +47,7 @@ const normalizeSingleAvailability = (slots = []) => {
 };
 
 const DoctorDashboard = () => {
+  const { refreshUser } = useAuth();
   const [availability, setAvailability] = useState(normalizeSingleAvailability());
   const [appointments, setAppointments] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -57,7 +61,7 @@ const DoctorDashboard = () => {
 
   const loadProfile = async () => {
     try {
-      const { data } = await client.get("/doctors/profile");
+      const { data } = await patient.get("/doctors/profile");
       setProfile(data);
       setEditForm({
         consultationFee: data.consultationFee || 0,
@@ -72,7 +76,7 @@ const DoctorDashboard = () => {
 
   const saveProfile = async () => {
     try {
-      await client.put("/doctors/profile", editForm);
+      await patient.put("/doctors/profile", editForm);
       toast.success("Profile updated successfully");
       setEditMode(false);
       loadProfile();
@@ -83,16 +87,16 @@ const DoctorDashboard = () => {
 
   const fetchAppointments = async () => {
     try {
-      const { data } = await client.get("/doctors/appointments");
+      const { data } = await patient.get("/doctors/appointments");
       setAppointments(data);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to load appointments");
+      toast.error(error.response?.data?.message || "Failed to load bookings");
     }
   };
 
   const fetchReviews = async () => {
     try {
-      const { data } = await client.get(`/reviews/doctor/${profile?.user?._id || "me"}`);
+      const { data } = await patient.get(`/reviews/doctor/${profile?.user?._id || "me"}`);
       setReviews(data);
     } catch (error) {
       console.error("Failed to fetch reviews");
@@ -102,7 +106,7 @@ const DoctorDashboard = () => {
   const submitResponse = async (e) => {
     e.preventDefault();
     try {
-      await client.put(`/reviews/${replyModal.reviewId}/respond`, { response: replyModal.response });
+      await patient.put(`/reviews/${replyModal.reviewId}/respond`, { response: replyModal.response });
       toast.success("Response sent!");
       setReplyModal({ isOpen: false, reviewId: null, response: "" });
       fetchReviews();
@@ -149,9 +153,19 @@ const DoctorDashboard = () => {
     };
   }, [appointments]);
 
+  const revenueStats = useMemo(() => {
+    const fee = Number(profile?.consultationFee ?? 0);
+    const completedCount = appointments.filter((a) => a.status === "completed").length;
+    const gross = completedCount * fee;
+    const yourShare = Math.round(gross * (1 - PLATFORM_COMMISSION_RATE) * 100) / 100;
+    return { totalRevenue: gross, yourEarnings: yourShare };
+  }, [appointments, profile]);
+
   const statCards = [
-    { label: "Today Appointments", value: stats.today, icon: AppointmentIcon },
-    { label: "This Week Appointments", value: stats.week, icon: AppointmentIcon },
+    { label: "Total Revenue (completed)", value: `PKR ${revenueStats.totalRevenue}`, icon: FileIcon },
+    { label: "Your earnings (after 20% platform fee)", value: `PKR ${revenueStats.yourEarnings}`, icon: FileIcon },
+    { label: "Today Bookings", value: stats.today, icon: AppointmentIcon },
+    { label: "This Week Bookings", value: stats.week, icon: AppointmentIcon },
     { label: "Cancelled", value: stats.cancelled, icon: AppointmentIcon },
     { label: "Completed", value: stats.completed, icon: AppointmentIcon },
   ];
@@ -162,8 +176,8 @@ const DoctorDashboard = () => {
       if (a.status === "pending") {
         list.push({
           id: `new-${a._id}`,
-          title: "New Appointment",
-          message: `${a.patient?.name} requested a consultation.`,
+          title: "New Booking",
+          message: `${a.patient?.name} requested a service.`,
           type: "alert",
           linkTab: "appointments",
         });
@@ -173,7 +187,7 @@ const DoctorDashboard = () => {
       if (!r.doctorResponse) {
         list.push({
           id: `rev-${r._id}`,
-          title: "New Review",
+          title: "New Feedback",
           message: `${r.patient?.name} left a ${r.rating}-star rating.`,
           type: "info",
           linkTab: "reviews",
@@ -185,7 +199,7 @@ const DoctorDashboard = () => {
 
   const saveAvailability = async () => {
     try {
-      await client.put("/doctors/availability", { availability });
+      await patient.put("/doctors/availability", { availability });
       toast.success("Availability updated");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update availability");
@@ -193,8 +207,8 @@ const DoctorDashboard = () => {
   };
 
   const updateStatus = async (id, status) => {
-    await client.put(`/doctors/appointments/${id}/status`, { status });
-    toast.success("Appointment updated");
+    await patient.put(`/doctors/appointments/${id}/status`, { status });
+    toast.success("Booking updated");
     fetchAppointments();
   };
 
@@ -214,7 +228,7 @@ const DoctorDashboard = () => {
       await updateStatus(appointment._id, "in-progress");
     }
 
-    window.open(`https://meet.jit.si/Prescripto-Appt-${appointment._id}`, "_blank");
+    window.open(`https://meet.jit.si/Perscripto-Booking-${appointment._id}`, "_blank");
   };
 
   const statusBadge = (status) => {
@@ -230,6 +244,33 @@ const DoctorDashboard = () => {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <Loader />
+      </div>
+    );
+  }
+
+  if (profile?.user?.status === "suspended") {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-xl rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-amber-900">Account temporarily suspended</h2>
+          <p className="mt-2 text-sm text-amber-800">Your doctor account is temporarily suspended. Please contact admin to restore access.</p>
+          {profile?.user?.suspendedUntil && (
+            <p className="mt-3 text-xs text-amber-700">
+              Suspension ends: <span className="font-semibold">{new Date(profile.user.suspendedUntil).toLocaleString()}</span>
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (profile?.user?.status === "blocked") {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-xl rounded-2xl border border-rose-200 bg-rose-50 p-6 shadow-sm">
+          <h2 className="text-xl font-bold text-rose-900">Account blocked</h2>
+          <p className="mt-2 text-sm text-rose-800">Your doctor account has been blocked. Please contact admin.</p>
+        </div>
       </div>
     );
   }
@@ -250,20 +291,20 @@ const DoctorDashboard = () => {
     <>
       <DashboardShell
         title="Doctor Dashboard"
-        subtitle="Manage appointments, profile, and verification status."
+        subtitle="Manage bookings, profile, and verification status."
         notifications={notifications}
         navItems={[
           { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
-          { id: "appointments", label: "Appointments", icon: AppointmentIcon, hasNotification: appointments.some((a) => a.status === "pending") },
+          { id: "appointments", label: "Bookings", icon: AppointmentIcon, hasNotification: appointments.some((a) => a.status === "pending") },
           { id: "reviews", label: "Patient Reviews", icon: FileIcon },
-          { id: "profile", label: "Profile", icon: ProfileIcon },
+          { id: "profile", label: "Profile & account", icon: ProfileIcon },
         ]}
       >
         {(activeTab) => (
           <>
             {activeTab === "dashboard" && (
               <div className="space-y-6">
-                <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {statCards.map((item) => (
                     <article key={item.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                       <div className="flex items-center gap-4">
@@ -361,9 +402,9 @@ const DoctorDashboard = () => {
 
             {activeTab === "appointments" && (
               <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Appointments</h3>
+                <h3 className="text-lg font-semibold text-slate-900">Bookings</h3>
                 {appointments.length === 0 ? (
-                  <p className="mt-4 text-sm text-slate-500">No appointments assigned.</p>
+                  <p className="mt-4 text-sm text-slate-500">No bookings assigned.</p>
                 ) : (
                   <div className="mt-4 overflow-x-auto">
                     <table className="min-w-full text-left text-sm">
@@ -410,7 +451,7 @@ const DoctorDashboard = () => {
                                       {a.status === "in-progress" ? "End Call" : "Complete"}
                                     </button>
                                     <button className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => setPrescriptionModal({ isOpen: true, appointment: a })}>
-                                      Rx Prescription
+                                      Add Service Note
                                     </button>
                                   </>
                                 )}
@@ -420,7 +461,7 @@ const DoctorDashboard = () => {
                                       ✓ Payment Received
                                     </button>
                                     <button className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => setPrescriptionModal({ isOpen: true, appointment: a })}>
-                                      Rx Prescription
+                                      Add Service Note
                                     </button>
                                   </>
                                 )}
@@ -436,15 +477,26 @@ const DoctorDashboard = () => {
             )}
 
             {activeTab === "profile" && (
+              <div className="space-y-6">
+                <AccountProfileForm
+                  refreshUser={refreshUser}
+                  onSaved={loadProfile}
+                  idPrefix="doctor-acct"
+                  title="Account"
+                  description="Update your sign-in name, email, phone, and password. Public listing fields are edited below."
+                />
               <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-slate-900">My Profile</h3>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold text-slate-900">Doctor listing</h3>
+                    <p className="mt-1 text-sm text-slate-500">Service rate, experience, and bio shown to patients.</p>
+                  </div>
                   {!editMode ? (
-                    <button onClick={() => setEditMode(true)} className="rounded-lg bg-indigo-50 text-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-100 transition-colors">
-                      Edit Profile
+                    <button onClick={() => setEditMode(true)} className="rounded-lg bg-indigo-50 text-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-100 transition-colors shrink-0">
+                      Edit listing
                     </button>
                   ) : (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 shrink-0">
                       <button
                         onClick={() => {
                           setEditMode(false);
@@ -459,7 +511,7 @@ const DoctorDashboard = () => {
                         Cancel
                       </button>
                       <button onClick={saveProfile} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
-                        Save Changes
+                        Save listing
                       </button>
                     </div>
                   )}
@@ -468,26 +520,20 @@ const DoctorDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Basic Information</h4>
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Verification</h4>
                       <div className="rounded-xl border border-slate-200 p-4 bg-slate-50">
                         <p className="text-sm">
-                          <span className="font-semibold text-slate-700">Name:</span> {profile?.user?.name}
-                        </p>
-                        <p className="text-sm mt-2">
-                          <span className="font-semibold text-slate-700">Email:</span> {profile?.user?.email}
-                        </p>
-                        <p className="text-sm mt-2">
                           <span className="font-semibold text-slate-700">Specialization:</span> {profile?.specialization}
                         </p>
                         <div className="flex items-center mt-2">
-                          <span className="font-semibold text-slate-700 text-sm mr-2">Account Status:</span>
+                          <span className="font-semibold text-slate-700 text-sm mr-2">Account status:</span>
                           <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(profile?.status)}`}>{profile?.status}</span>
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Consultation Details</h4>
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Service Details</h4>
                       <div className="rounded-xl border border-slate-200 p-4">
                         {!editMode ? (
                           <>
@@ -495,7 +541,7 @@ const DoctorDashboard = () => {
                               <span className="font-semibold text-slate-700">Experience:</span> {profile?.experienceYears} years
                             </p>
                             <p className="text-sm mt-2">
-                              <span className="font-semibold text-slate-700">Consultation Fee:</span> {formatConsultationFee(profile?.consultationFee)}
+                              <span className="font-semibold text-slate-700">Service Rate:</span> {formatConsultationFee(profile?.consultationFee)}
                             </p>
                           </>
                         ) : (
@@ -510,7 +556,7 @@ const DoctorDashboard = () => {
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-semibold text-slate-700 mb-1">Consultation Fee (Rs.)</label>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Service Rate (PKR)</label>
                               <input
                                 type="number"
                                 className="w-full rounded-lg border border-slate-300 p-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
@@ -525,14 +571,14 @@ const DoctorDashboard = () => {
                   </div>
 
                   <div>
-                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Professional Bio</h4>
-                    <div className="rounded-xl border border-slate-200 p-4 h-[calc(100%-1.5rem)]">
+                    <h4 className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Bio</h4>
+                    <div className="h-[calc(100%-1.5rem)] rounded-xl border border-slate-200 p-4">
                       {!editMode ? (
-                        <p className="text-sm text-slate-600 whitespace-pre-wrap">{profile?.bio || "No bio added yet."}</p>
+                        <p className="whitespace-pre-wrap text-sm text-slate-600">{profile?.bio || "No bio added yet."}</p>
                       ) : (
                         <textarea
-                          className="w-full h-full min-h-[150px] rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 resize-none"
-                          placeholder="Write a brief professional biography..."
+                          className="h-full min-h-[150px] w-full resize-none rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                          placeholder="Describe your services and experience for patients..."
                           value={editForm.bio}
                           onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                         />
@@ -541,6 +587,7 @@ const DoctorDashboard = () => {
                   </div>
                 </div>
               </section>
+              </div>
             )}
 
             {activeTab === "reviews" && (

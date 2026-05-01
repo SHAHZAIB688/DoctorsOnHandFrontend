@@ -1,6 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-import client from "../api/client";
+import patient from "../api/client";
 
 const PrescriptionForm = ({ appointment, onClose, onSubmitSuccess }) => {
   const [form, setForm] = useState({
@@ -69,7 +69,7 @@ const PrescriptionForm = ({ appointment, onClose, onSubmitSuccess }) => {
     };
 
     try {
-      const { data } = await client.post("/prescriptions", prescriptionData);
+      const { data } = await patient.post("/prescriptions", prescriptionData);
       toast.success("Prescription generated and sent to patient successfully!");
       if (onSubmitSuccess) {
         onSubmitSuccess(data);

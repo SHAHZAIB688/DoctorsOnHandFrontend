@@ -1,21 +1,26 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
-import client from "../../api/client";
+import patient from "../../api/client";
 import DashboardShell from "../../components/DashboardShell";
-import { DashboardIcon, DoctorIcon, AppointmentIcon, FileIcon } from "../../components/icons";
+import { DashboardIcon, DoctorIcon, AppointmentIcon, FileIcon, PaymentIcon, SettingsIcon } from "../../components/icons";
 import Loader from "../../components/Loader";
+import { useAuth } from "../../state/AuthContext";
 import PatientBookingModal from "./components/PatientBookingModal";
 import PatientReviewModal from "./components/PatientReviewModal";
 import PatientDashboardOverviewSection from "./components/PatientDashboardOverviewSection";
 import PatientHealthSummarySection from "./components/PatientHealthSummarySection";
-import PatientDoctorsSection from "./components/PatientDoctorsSection";
+import PatientWorkersSection from "./components/PatientWorkersSection";
 import PatientHistorySection from "./components/PatientHistorySection";
+import PatientPaymentHistorySection from "./components/PatientPaymentHistorySection";
+import PatientSettingsSection from "./components/PatientSettingsSection";
 
-const formatConsultationFee = (fee) => {
+const formatServiceFee = (fee) => {
   if (!fee || fee === 0) return "Free";
-  return `Rs. ${fee}`;
+  return `PKR ${fee}`;
 };
+
+const doctorLabel = (appointment) => appointment?.doctor?.name || "Your doctor";
 
 const normalizeTimeSlot = (timeSlot) => {
   if (!timeSlot) return "";
@@ -47,15 +52,16 @@ const PatientDashboard = () => {
   const prevAppointmentsRef = useRef([]);
   const location = useLocation();
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   const fetchDoctors = async () => {
-    const { data } = await client.get("/doctors");
+    const { data } = await patient.get("/doctors");
     setDoctors(data);
   };
 
   const fetchHealthSummary = async () => {
     try {
-      const { data } = await client.get("/auth/me");
+      const { data } = await patient.get("/auth/me");
       const summary = data?.healthSummary || {};
       setHealthSummary({
         bloodGroup: summary.bloodGroup || "",
@@ -64,19 +70,19 @@ const PatientDashboard = () => {
         lastCheckup: summary.lastCheckup || "",
       });
     } catch (error) {
-      toast.error("Failed to load health summary");
+      toast.error("Failed to load profile summary");
     }
   };
 
   const fetchAppointments = async () => {
     try {
-      const { data } = await client.get("/appointments/my");
+      const { data } = await patient.get("/appointments/my");
 
       if (prevAppointmentsRef.current.length > 0) {
         data.forEach((newAppt) => {
           const oldAppt = prevAppointmentsRef.current.find((a) => a._id === newAppt._id);
           if (oldAppt && oldAppt.status !== "in-progress" && newAppt.status === "in-progress") {
-            toast.success(`Dr. ${newAppt.doctor?.name || ""} has started your video call!`, { duration: 8000 });
+            toast.success(`${newAppt.doctor?.name || "Your doctor"} has started your video call!`, { duration: 8000 });
           }
         });
       }
@@ -121,7 +127,7 @@ const PatientDashboard = () => {
       }
 
       try {
-        await client.post("/appointments/verify-payment", { sessionId, appointmentId });
+        await patient.post("/appointments/verify-payment", { sessionId, appointmentId });
         toast.success("Stripe payment verified successfully.");
         const refreshedAppointments = await fetchAppointments();
         const paidAppointment = refreshedAppointments.find((appt) => appt._id === appointmentId);
@@ -153,7 +159,7 @@ const PatientDashboard = () => {
 
       setLoadingSlots(true);
       try {
-        const { data } = await client.get(`/doctors/available-slots/${form.doctorProfileId}`, {
+        const { data } = await patient.get(`/doctors/available-slots/${form.doctorProfileId}`, {
           params: { date: form.date },
         });
         setAvailableSlots(Array.isArray(data) ? data : []);
@@ -184,8 +190,8 @@ const PatientDashboard = () => {
     };
 
     try {
-      await client.post("/appointments", payload);
-      toast.success("Appointment booked and WhatsApp sent");
+      await patient.post("/appointments", payload);
+      toast.success("Service booked and WhatsApp sent");
       setForm({ doctorProfileId: "", date: "", timeSlot: "", reason: "" });
       setAvailableSlots([]);
       setBookingModalOpen(false);
@@ -196,7 +202,7 @@ const PatientDashboard = () => {
   };
 
   const cancel = async (id) => {
-    await client.put(`/appointments/${id}/cancel`);
+    await patient.put(`/appointments/${id}/cancel`);
     fetchAppointments();
   };
 
@@ -204,7 +210,7 @@ const PatientDashboard = () => {
     const date = window.prompt("Enter new date (YYYY-MM-DD)");
     const timeSlot = window.prompt("Enter new time slot (HH:mm)");
     if (!date || !timeSlot) return;
-    await client.put(`/appointments/${id}/reschedule`, { date, timeSlot });
+    await patient.put(`/appointments/${id}/reschedule`, { date, timeSlot });
     fetchAppointments();
   };
 
@@ -220,12 +226,12 @@ const PatientDashboard = () => {
       return;
     }
 
-    window.open(`https://meet.jit.si/Prescripto-Appt-${appointment._id}`, "_blank");
+    window.open(`https://meet.jit.si/Perscripto-Booking-${appointment._id}`, "_blank");
   };
 
   const openPaymentModal = async (id) => {
     try {
-      const { data } = await client.post(`/appointments/${id}/create-checkout-session`);
+      const { data } = await patient.post(`/appointments/${id}/create-checkout-session`);
       if (!data?.url) {
         toast.error("Unable to initialize Stripe checkout");
         return;
@@ -239,7 +245,7 @@ const PatientDashboard = () => {
   const processPayment = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await client.post(`/appointments/${paymentModal.appointmentId}/create-checkout-session`);
+      const { data } = await patient.post(`/appointments/${paymentModal.appointmentId}/create-checkout-session`);
       if (!data?.url) {
         toast.error("Unable to initialize Stripe checkout");
         return;
@@ -253,7 +259,7 @@ const PatientDashboard = () => {
   const submitReview = async (e) => {
     e.preventDefault();
     try {
-      await client.post("/reviews", {
+      await patient.post("/reviews", {
         appointmentId: reviewModal.appointmentId,
         rating: reviewModal.rating,
         comment: reviewModal.comment,
@@ -276,10 +282,10 @@ const PatientDashboard = () => {
         chronicDiseases: healthSummary.chronicDiseases,
         lastCheckup: healthSummary.lastCheckup,
       };
-      await client.put("/auth/health-summary", payload);
-      toast.success("Health summary updated");
+      await patient.put("/auth/health-summary", payload);
+      toast.success("Profile summary updated");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update health summary");
+      toast.error(error.response?.data?.message || "Failed to update profile summary");
     } finally {
       setSavingHealthSummary(false);
     }
@@ -292,7 +298,7 @@ const PatientDashboard = () => {
         list.push({
           id: `accepted-${a._id}`,
           title: "Request Accepted!",
-          message: `Dr. ${a.doctor?.name} accepted your appointment. You can join the call now.`,
+          message: `${doctorLabel(a)} accepted your service request. You can join the call now.`,
           type: "info",
           linkTab: "history",
         });
@@ -301,7 +307,7 @@ const PatientDashboard = () => {
         list.push({
           id: `call-${a._id}`,
           title: "Call In-Progress",
-          message: `Dr. ${a.doctor?.name} is waiting for you.`,
+          message: `${doctorLabel(a)} is waiting for you.`,
           type: "alert",
           linkTab: "history",
         });
@@ -310,16 +316,16 @@ const PatientDashboard = () => {
         list.push({
           id: `pay-${a._id}`,
           title: "Payment Pending",
-          message: `Please pay ${formatConsultationFee(a.doctorProfile?.consultationFee || 2000)} to complete your visit.`,
+          message: `Please pay ${formatServiceFee(a.doctorProfile?.consultationFee || 2000)} to complete your service.`,
           type: "info",
-          linkTab: "history",
+          linkTab: "payments",
         });
       }
       if (a.prescription) {
         list.push({
           id: `rx-${a._id}`,
-          title: "New Prescription",
-          message: `Dr. ${a.doctor?.name} has sent you a prescription.`,
+          title: "New Service Note",
+          message: `${doctorLabel(a)} has sent you a service note.`,
           type: "info",
           linkTab: "history",
         });
@@ -328,7 +334,7 @@ const PatientDashboard = () => {
         list.push({
           id: `rev-${a._id}`,
           title: "Doctor Replied",
-          message: `Dr. ${a.doctor?.name} responded to your feedback.`,
+          message: `${doctorLabel(a)} responded to your feedback.`,
           type: "info",
           linkTab: "history",
         });
@@ -342,12 +348,12 @@ const PatientDashboard = () => {
       ["pending", "accepted", "in-progress", "awaiting-payment"].includes(a.status)
     ).length;
     const completedCount = appointments.filter((a) => a.status === "completed").length;
-    const medicalReports = appointments.filter((a) => a.status === "completed" || Boolean(a.prescription)).length;
+    const serviceNotesCount = appointments.filter((a) => a.status === "completed" || Boolean(a.prescription)).length;
 
     return [
       { id: "upcoming", label: "Upcoming Appointments", value: upcomingCount, icon: AppointmentIcon },
-      { id: "completed", label: "Completed Consultations", value: completedCount, icon: DashboardIcon },
-      { id: "reports", label: "Medical Reports", value: medicalReports, icon: DoctorIcon },
+      { id: "completed", label: "Completed Appointments", value: completedCount, icon: DashboardIcon },
+      { id: "reports", label: "Medical Reports", value: serviceNotesCount, icon: DoctorIcon },
     ];
   }, [appointments]);
 
@@ -387,19 +393,26 @@ const PatientDashboard = () => {
   return (
     <>
       <DashboardShell
-        title="Patient Dashboard"
-        subtitle="Manage appointments and find trusted doctors."
+        title="Patient dashboard"
+        subtitle="Book doctors, pay for services, and manage your profile."
         notifications={notifications}
         navItems={[
           { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
-          { id: "doctors", label: "Find Doctors", icon: DoctorIcon },
-          { id: "health-summary", label: "Health Summary", icon: AppointmentIcon },
+          { id: "doctors", label: "Find doctors", icon: DoctorIcon },
+          { id: "health-summary", label: "Profile summary", icon: AppointmentIcon },
+          {
+            id: "payments",
+            label: "Payment history",
+            icon: PaymentIcon,
+            hasNotification: appointments.some((a) => a.status === "awaiting-payment"),
+          },
           {
             id: "history",
-            label: "Appointment History",
+            label: "Booking history",
             icon: FileIcon,
-            hasNotification: appointments.some((a) => a.status === "accepted" || a.status === "in-progress" || a.status === "awaiting-payment"),
+            hasNotification: appointments.some((a) => a.status === "accepted" || a.status === "in-progress"),
           },
+          { id: "settings", label: "Settings", icon: SettingsIcon },
         ]}
       >
         {(activeTab) => (
@@ -423,15 +436,19 @@ const PatientDashboard = () => {
             )}
 
             {activeTab === "doctors" && (
-              <PatientDoctorsSection
+              <PatientWorkersSection
                 doctorFilter={doctorFilter}
                 setDoctorFilter={setDoctorFilter}
                 doctorCategories={doctorCategories}
                 filteredDoctors={filteredDoctors}
-                formatConsultationFee={formatConsultationFee}
+                formatServiceFee={formatServiceFee}
                 setForm={setForm}
                 setBookingModalOpen={setBookingModalOpen}
               />
+            )}
+
+            {activeTab === "payments" && (
+              <PatientPaymentHistorySection appointments={appointments} openPaymentModal={openPaymentModal} />
             )}
 
             {activeTab === "history" && (
@@ -443,6 +460,8 @@ const PatientDashboard = () => {
                 cancel={cancel}
               />
             )}
+
+            {activeTab === "settings" && <PatientSettingsSection refreshUser={refreshUser} />}
           </div>
         )}
       </DashboardShell>
@@ -465,7 +484,7 @@ const PatientDashboard = () => {
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <h3 className="text-xl font-bold text-slate-800 mb-2">Complete Stripe Payment</h3>
             <p className="text-sm text-slate-500 mb-6">
-              Pay consultation fee securely via Stripe to Dr. {paymentModal.doctorName}
+              Pay the service fee securely via Stripe for {paymentModal.doctorName}.
             </p>
 
             <form onSubmit={processPayment} className="space-y-4">

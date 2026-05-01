@@ -17,7 +17,7 @@ const DoctorListCard = ({ doctor }) => (
     <div className="mt-8 flex flex-1 flex-col">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-xl font-bold text-slate-900 transition-colors group-hover:text-brand-600">Dr. {doctor.user?.name}</h3>
+          <h3 className="text-xl font-bold text-slate-900 transition-colors group-hover:text-brand-600">{doctor.user?.name}</h3>
           <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-brand-500">{doctor.specialization}</p>
         </div>
         <div className="flex items-center gap-1.5 rounded-xl border border-amber-100 bg-amber-50 px-3 py-1.5 text-sm font-bold text-amber-600">

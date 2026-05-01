@@ -11,7 +11,7 @@ const TermsPage = () => {
           </div>
           <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl">Terms and Conditions</h1>
           <p className="mt-6 text-lg leading-relaxed text-slate-300 md:text-xl">
-            Please read these terms carefully before using our platform. By accessing Prescripto, you agree to be bound by these legal guidelines.
+            Please read these terms carefully before using our platform. By accessing Perscripto, you agree to be bound by these legal guidelines.
           </p>
         </div>
         <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-brand-600/20 blur-[100px]" />
@@ -72,7 +72,7 @@ const TermsPage = () => {
       <section className="rounded-[2rem] bg-slate-50 p-12 text-center border border-slate-100">
         <h2 className="text-2xl font-bold text-slate-900">Acceptance of Terms</h2>
         <p className="mt-4 mx-auto max-w-2xl text-slate-600">
-          By continuing to use Prescripto, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
+          By continuing to use Perscripto, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.
         </p>
         <div className="mt-8 text-sm text-slate-400 font-medium">Last Updated: April 26, 2026</div>
       </section>

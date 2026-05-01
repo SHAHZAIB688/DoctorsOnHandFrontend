@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import client, { buildBackendAssetUrl } from "../../api/client";
+import patient, { buildBackendAssetUrl } from "../../api/client";
 import Loader from "../../components/Loader";
 import WhyChooseUsSection from "../../components/WhyChooseUsSection";
 
@@ -42,7 +42,7 @@ const FAQ_ITEMS = [
 
 const formatConsultationFee = (fee) => {
   if (!fee || fee === 0) return "Free";
-  return `Rs. ${fee}`;
+  return `PKR ${fee}`;
 };
 
 const HomePage = () => {
@@ -70,7 +70,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const { data } = await client.get("/doctors");
+        const { data } = await patient.get("/doctors");
         setDoctors(Array.isArray(data) ? data : []);
       } catch (error) {
         toast.error("Unable to load featured doctors");

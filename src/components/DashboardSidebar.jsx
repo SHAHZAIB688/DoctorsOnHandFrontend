@@ -10,8 +10,8 @@ const DashboardSidebar = ({ navItems, activeTab, onTabChange, onLogout, isOpen }
     <div className="flex h-full flex-col">
       <div className="mb-8 flex items-center justify-between">
         <div className="flex items-center justify-center gap-1 w-full">
-          <img src={sidebarLogo} alt="Prescripto logo" className="h-10 w-10 object-contain" />
-          <span className="-ml-1 text-[26px] font-bold leading-none tracking-tight">Prescripto</span>
+          <img src={sidebarLogo} alt="Perscripto logo" className="h-10 w-10 object-contain" />
+          <span className="-ml-1 text-[26px] font-bold leading-none tracking-tight">Perscripto</span>
         </div>
       </div>
 

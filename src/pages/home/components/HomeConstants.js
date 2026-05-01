@@ -1,42 +1,42 @@
 export const HERO_IMAGES = [
-  "https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1581091215367-59ab6dcef9ac?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80",
 ];
 
 export const TOP_SPECIALITIES = [
+  "General Physician",
   "Cardiologist",
   "Dermatologist",
-  "Neurologist",
   "Pediatrician",
-  "General Physician",
-  "Gynecologist",
+  "Neurologist",
+  "Orthopedic Surgeon",
 ];
 
 export const HOW_IT_WORKS_STEPS = [
-  { title: "Search Doctors", text: "Browse specialists by category, reviews, and availability." },
-  { title: "View Profile", text: "Open detailed doctor profile with fees, bio, and patient feedback." },
-  { title: "Book Appointment", text: "Select a date and available slot in seconds." },
-  { title: "Consult & Follow Up", text: "Complete consultation and manage reports with reminders." },
+  { title: "Search Doctors", text: "Browse qualified doctors by specialization, ratings, and availability." },
+  { title: "Review Profile", text: "Check experience, consultation fee, and patient feedback before booking." },
+  { title: "Book Appointment", text: "Choose your date and preferred time slot in seconds." },
+  { title: "Get Consultation", text: "Track progress and stay updated until treatment is completed." },
 ];
 
 export const FAQ_ITEMS = [
   {
-    q: "How do I book an appointment?",
-    a: "Go to Doctors, open a doctor's detail page, choose date/time slot, and confirm booking.",
+    q: "How do I book a doctor?",
+    a: "Go to Doctors, open a doctor detail page, choose date/time slot, and confirm booking.",
   },
   {
-    q: "Are doctors verified on Prescripto?",
-    a: "Yes, listed doctors are verified before they become available for patient booking.",
+    q: "Are doctors verified on Perscripto?",
+    a: "Yes, listed doctors are verified before they become available for patient bookings.",
   },
   {
-    q: "Can I pay online for consultations?",
-    a: "Yes, Stripe checkout is integrated for secure online consultation payments.",
+    q: "Can I pay online for appointments?",
+    a: "Yes, Stripe checkout is integrated for secure online appointment payments.",
   },
   {
-    q: "Can I update my health summary anytime?",
-    a: "Yes, patient dashboard includes a Health Summary tab where you can edit details anytime.",
+    q: "Can I update my profile details anytime?",
+    a: "Yes, the dashboard includes profile sections where you can edit your details anytime.",
   },
 ];
 
@@ -46,7 +46,7 @@ export const TESTIMONIALS = [
     role: "Patient",
     image: "https://randomuser.me/api/portraits/men/32.jpg",
     content:
-      "Prescripto ne meri appointments manage karna bohat easy bana diya hai. Ab line mein wait nahi karna parta aur doctors bhi bohat professional hain.",
+      "Perscripto ne doctor appointments book karna bohat easy bana diya hai. Doctors time par available hote hain aur consultation professional hoti hai.",
     rating: 5,
   },
   {
@@ -54,7 +54,7 @@ export const TESTIMONIALS = [
     role: "Patient",
     image: "https://randomuser.me/api/portraits/women/44.jpg",
     content:
-      "Mujhe WhatsApp notifications ka feature bohat pasand aaya. Har appointment ka reminder mil jata hai, jo bohat helpful hai.",
+      "Mujhe WhatsApp notifications ka feature bohat pasand aaya. Har appointment booking ka reminder mil jata hai, jo bohat helpful hai.",
     rating: 5,
   },
   {
@@ -62,7 +62,7 @@ export const TESTIMONIALS = [
     role: "Patient",
     image: "https://randomuser.me/api/portraits/men/76.jpg",
     content:
-      "Interface simple aur user-friendly hai. Main easily apni family ke liye appointments book kar leta hoon. Bohat acha system hai.",
+      "Interface simple aur user-friendly hai. Main easily apni medical consultation ke liye doctors book kar leta hoon. Bohat acha system hai.",
     rating: 4,
   },
   {
@@ -70,7 +70,7 @@ export const TESTIMONIALS = [
     role: "Patient",
     image: "https://randomuser.me/api/portraits/women/68.jpg",
     content:
-      "Security features dekh kar mujhe confidence mila ke meri personal information safe hai. Yeh ek modern aur reliable healthcare platform hai.",
+      "Security features dekh kar mujhe confidence mila ke meri personal information safe hai. Yeh ek modern aur reliable doctor appointment platform hai.",
     rating: 5,
   },
   {

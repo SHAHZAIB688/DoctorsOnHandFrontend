@@ -18,7 +18,7 @@ const LoginPage = () => {
     setLoading(true);
     try {
       await login({ email: form.email, password: form.password });
-      toast.success("Welcome back to Prescripto");
+      toast.success("Welcome back to Perscripto");
       navigate("/dashboard");
     } catch (error) {
       toast.error(error.response?.data?.message || "Authentication failed");

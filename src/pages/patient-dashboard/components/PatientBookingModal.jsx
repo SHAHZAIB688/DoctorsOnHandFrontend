@@ -25,7 +25,7 @@ const PatientBookingModal = ({
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
           </svg>
         </button>
-        <h3 className="text-2xl font-bold tracking-tight text-slate-900">Book Appointment</h3>
+        <h3 className="text-2xl font-bold tracking-tight text-slate-900">Book a service</h3>
         <form className="mt-5 grid gap-4" onSubmit={onSubmit}>
           <select
             required
@@ -39,7 +39,7 @@ const PatientBookingModal = ({
             <option value="">Select doctor</option>
             {doctors.map((d) => (
               <option key={d._id} value={d._id}>
-                {d.user?.name} - {d.specialization}
+                {d.user?.name} — {d.specialization}
               </option>
             ))}
           </select>
@@ -77,7 +77,7 @@ const PatientBookingModal = ({
           )}
 
           <textarea
-            placeholder="Reason"
+            placeholder="Job details or special requests"
             value={form.reason}
             onChange={(e) => setForm((p) => ({ ...p, reason: e.target.value }))}
             className="min-h-24 w-full rounded-2xl border border-slate-300 px-4 py-3 text-base text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"

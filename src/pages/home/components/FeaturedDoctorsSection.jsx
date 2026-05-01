@@ -6,7 +6,7 @@ const FeaturedDoctorsSection = ({ loadingDoctors, featuredDoctors, formatConsult
   <section className="space-y-6">
     <div>
       <h2 className="text-2xl font-bold text-slate-900 md:text-3xl">Featured Doctors</h2>
-      <p className="mt-1 text-sm text-slate-600">Meet our most trusted specialists.</p>
+      <p className="mt-1 text-sm text-slate-600">Meet our most trusted professionals.</p>
     </div>
     {loadingDoctors ? (
       <div className="flex h-40 items-center justify-center rounded-2xl border border-slate-200 bg-white">
@@ -21,12 +21,12 @@ const FeaturedDoctorsSection = ({ loadingDoctors, featuredDoctors, formatConsult
               alt={doctor.user?.name || "Doctor"}
               className="h-44 w-full rounded-xl bg-slate-100 object-cover"
             />
-            <h3 className="mt-4 text-lg font-bold text-slate-900">Dr. {doctor.user?.name}</h3>
+            <h3 className="mt-4 text-lg font-bold text-slate-900">{doctor.user?.name}</h3>
             <p className="text-sm text-brand-700">{doctor.specialization}</p>
             <div className="mt-3 space-y-1 text-sm text-slate-600">
               <p>Experience: {doctor.experienceYears || 0} years</p>
               <p>Rating: {Number(doctor.averageRating || 0).toFixed(1)} / 5.0</p>
-              <p className="font-semibold text-brand-600">Fee: {formatConsultationFee(doctor.consultationFee)}</p>
+              <p className="font-semibold text-brand-600">Starting Rate: {formatConsultationFee(doctor.consultationFee)}</p>
             </div>
             <Link to={`/doctors/${doctor._id}`} className="mt-4 inline-block w-full rounded-xl bg-brand-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-brand-700">
               View Details

@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import BackendStatusModal from "./components/BackendStatusModal";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Loader from "./components/Loader";
@@ -13,27 +14,30 @@ import DoctorsPage from "./pages/doctors";
 import DoctorDetailsPage from "./pages/doctor-details";
 
 const App = () => (
-  <Layout>
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/contact" element={<ContactPage />} />
-      <Route path="/terms" element={<TermsPage />} />
-      <Route path="/doctors" element={<DoctorsPage />} />
-      <Route path="/doctors/:doctorId" element={<DoctorDetailsPage />} />
-      <Route
-        path="/dashboard"
-        element={(
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        )}
-      />
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
-  </Layout>
+  <>
+    <Layout>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/doctors" element={<DoctorsPage />} />
+        <Route path="/doctors/:doctorId" element={<DoctorDetailsPage />} />
+        <Route
+          path="/dashboard"
+          element={(
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Layout>
+    <BackendStatusModal />
+  </>
 );
 
 export default App;

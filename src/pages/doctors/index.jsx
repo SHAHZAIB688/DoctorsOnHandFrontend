@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import client from "../../api/client";
+import patient from "../../api/client";
 import Loader from "../../components/Loader";
 import DoctorsFilterBar from "./components/DoctorsFilterBar";
 import DoctorListCard from "./components/DoctorListCard";
@@ -17,7 +17,7 @@ const DoctorsPage = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const { data } = await client.get("/doctors");
+        const { data } = await patient.get("/doctors");
         setDoctors(data || []);
         setFilteredDoctors(data || []);
       } catch (error) {
@@ -82,8 +82,8 @@ const DoctorsPage = () => {
   return (
     <div className="space-y-8 pb-12">
       <section className="mb-8 flex flex-col items-center justify-center gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Find Your Specialist</h1>
-        <p className="mt-2 text-slate-600">Search through our verified network of expert doctors.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Find the Right Doctor</h1>
+        <p className="mt-2 text-slate-600">Search through our verified network of skilled professionals.</p>
       </section>
 
       <DoctorsFilterBar
@@ -114,7 +114,7 @@ const DoctorsPage = () => {
           </div>
           <h3 className="text-2xl font-bold text-slate-900">No doctors match your criteria</h3>
           <p className="mx-auto mt-3 max-w-md text-slate-500">
-            We couldn't find any specialists matching your search. Try changing the category or clearing your search.
+            We could not find any doctors matching your search. Try changing the category or clearing your search.
           </p>
         </div>
       ) : (

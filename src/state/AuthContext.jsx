@@ -1,7 +1,19 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import client from "../api/client";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import patient from "../api/client";
 
 const AuthContext = createContext(null);
+
+const normalizeAuthUser = (doc) => ({
+  id: doc._id ?? doc.id,
+  name: doc.name,
+  email: doc.email,
+  role: doc.role,
+  phone: doc.phone ?? "",
+  status: doc.status,
+  specialization: doc.specialization ?? "",
+  experience: doc.experience ?? 0,
+  degreeFile: doc.degreeFile ?? "",
+});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -10,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   });
 
   const login = async (payload) => {
-    const { data } = await client.post("/auth/login", payload);
+    const { data } = await patient.post("/auth/login", payload);
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
     setUser(data.user);
@@ -30,7 +42,7 @@ export const AuthProvider = ({ children }) => {
       config = { headers: { "Content-Type": "multipart/form-data" } };
     }
 
-    const { data } = await client.post("/auth/register", requestBody, config);
+    const { data } = await patient.post("/auth/register", requestBody, config);
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
     setUser(data.user);
@@ -43,7 +55,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const value = useMemo(() => ({ user, login, register, logout }), [user]);
+  const refreshUser = useCallback(async () => {
+    const { data } = await patient.get("/auth/me");
+    const normalized = normalizeAuthUser(data);
+    localStorage.setItem("user", JSON.stringify(normalized));
+    setUser(normalized);
+    return normalized;
+  }, []);
+
+  const value = useMemo(() => ({ user, login, register, logout, refreshUser }), [user, refreshUser]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

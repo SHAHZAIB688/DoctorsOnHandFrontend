@@ -12,34 +12,34 @@ export const generatePDF = (prescription, doctorName, specialization) => {
   const secondaryColor = [71, 85, 105]; // text-slate-600
   const lightGray = [241, 245, 249]; // bg-slate-100
 
-  // 1. Header (Hospital / Clinic Name)
+  // 1. Header
   doc.setFillColor(...primaryColor);
   doc.rect(0, 0, 210, 30, 'F');
   
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.text("PERSCRIPTO", 14, 20);
+  doc.text("WORKER ZONE", 14, 20);
   
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Digital Health Clinic", 140, 20);
+  doc.text("Digital Service Platform", 132, 20);
 
   // 2. Doctor Info
   doc.setTextColor(...primaryColor);
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text(`Dr. ${doctorName || 'Doctor'}`, 14, 45);
+  doc.text(`${doctorName || "Doctor"}`, 14, 45);
   
   doc.setTextColor(...secondaryColor);
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`${specialization || 'Specialist'}`, 14, 51);
+  doc.text(`${specialization || 'Service Specialist'}`, 14, 51);
   
   // Date and ID
   doc.setFontSize(10);
   doc.text(`Date: ${new Date(prescription.createdAt || prescription.date || Date.now()).toLocaleDateString()}`, 140, 45);
-  doc.text(`Prescription ID: ${prescription._id ? prescription._id.toString().substring(0, 8).toUpperCase() : 'RX-NEW'}`, 140, 51);
+  doc.text(`Service ID: ${prescription._id ? prescription._id.toString().substring(0, 8).toUpperCase() : 'JOB-NEW'}`, 140, 51);
 
   doc.setDrawColor(226, 232, 240); // slate-200
   doc.line(14, 58, 196, 58);
@@ -57,12 +57,12 @@ export const generatePDF = (prescription, doctorName, specialization) => {
   doc.text(`Age: ${prescription.age || 'N/A'}`, 100, 76);
   doc.text(`Gender: ${prescription.gender || 'N/A'}`, 150, 76);
 
-  // 4. Clinical Assessment
+  // 4. Job Assessment
   let currentY = 88;
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...primaryColor);
-  doc.text("Clinical Assessment", 14, currentY);
+  doc.text("Job Assessment", 14, currentY);
   
   currentY += 8;
   doc.setFontSize(10);
@@ -70,7 +70,7 @@ export const generatePDF = (prescription, doctorName, specialization) => {
   doc.setTextColor(...secondaryColor);
   if (prescription.symptoms) {
     doc.setFont("helvetica", "bold");
-    doc.text("Symptoms:", 14, currentY);
+    doc.text("Issue Details:", 14, currentY);
     doc.setFont("helvetica", "normal");
     const symLines = doc.splitTextToSize(prescription.symptoms, 150);
     doc.text(symLines, 40, currentY);
@@ -78,20 +78,20 @@ export const generatePDF = (prescription, doctorName, specialization) => {
   }
 
   doc.setFont("helvetica", "bold");
-  doc.text("Diagnosis:", 14, currentY);
+  doc.text("Work Summary:", 14, currentY);
   doc.setFont("helvetica", "normal");
   const diagLines = doc.splitTextToSize(prescription.diagnosis, 150);
   doc.text(diagLines, 40, currentY);
   currentY += (diagLines.length * 5) + 6;
 
-  // 5. Rx Symbol
+  // 5. Work Symbol
   doc.setFontSize(20);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...primaryColor);
-  doc.text("Rx", 14, currentY);
+  doc.text("WZ", 14, currentY);
   currentY += 6;
 
-  // 6. Medicines Table
+  // 6. Task/Material Table
   const tableData = (prescription.medicines || []).map((m, i) => [
     i + 1,
     m.name,
@@ -103,7 +103,7 @@ export const generatePDF = (prescription, doctorName, specialization) => {
 
   autoTable(doc, {
     startY: currentY,
-    head: [['#', 'Medicine Name', 'Dosage', 'Frequency', 'Time', 'Duration']],
+    head: [['#', 'Item/Task', 'Quantity', 'Frequency', 'Time', 'Duration']],
     body: tableData,
     theme: 'grid',
     headStyles: { fillColor: primaryColor, textColor: 255 },
@@ -120,13 +120,13 @@ export const generatePDF = (prescription, doctorName, specialization) => {
     currentY = 20;
   }
 
-  // 7. Lab Tests & Advice
+  // 7. Additional Checks & Advice
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...primaryColor);
   
   if (prescription.labTests) {
-    doc.text("Lab Tests & Investigations", 14, currentY);
+    doc.text("Checks & Inspections", 14, currentY);
     currentY += 6;
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
@@ -161,8 +161,8 @@ export const generatePDF = (prescription, doctorName, specialization) => {
   doc.line(140, pageHeight - 30, 196, pageHeight - 30);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text("Doctor's Signature", 152, pageHeight - 24);
+  doc.text("Doctor Signature", 155, pageHeight - 24);
 
   // Save PDF
-  doc.save(`Prescription_${prescription.patientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Service_Report_${prescription.patientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
 };

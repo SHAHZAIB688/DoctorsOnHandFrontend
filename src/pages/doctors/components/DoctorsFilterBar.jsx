@@ -20,7 +20,7 @@ const DoctorsFilterBar = ({
       <SearchInput
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by name, specialty or clinic..."
+        placeholder="Search by name, skill, or service..."
         className="min-w-[200px] flex-1"
       />
 

@@ -16,7 +16,7 @@ const VerificationModal = ({ isOpen, onAction }) => {
         </div>
         <h3 className="text-2xl font-bold text-slate-900">Account Under Verification</h3>
         <p className="mt-4 text-slate-600 leading-relaxed">
-          Thank you for joining Prescripto! Your professional credentials have been submitted for review. 
+          Thank you for joining Perscripto! Your professional credentials have been submitted for review. 
           <br /><br />
           Please wait for admin approval (usually 24-48 hours) before you can access your doctor dashboard.
         </p>

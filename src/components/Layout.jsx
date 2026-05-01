@@ -22,11 +22,11 @@ const Layout = ({ children }) => {
               {/* Brand Column */}
               <div className="space-y-6">
                 <div className="flex items-center gap-2">
-                  <img src={LogoImg} alt="Prescripto Logo" className="h-10 w-10 rounded-lg" />
-                  <span className="text-xl font-extrabold tracking-tight text-brand-700">Prescripto</span>
+                  <img src={LogoImg} alt="Perscripto Logo" className="h-10 w-10 rounded-lg" />
+                  <span className="text-xl font-extrabold tracking-tight text-brand-700">Perscripto</span>
                 </div>
                 <p className="text-sm leading-relaxed text-slate-600">
-                  Modern healthcare booking platform for secure, fast, and reliable doctor appointment management. Making healthcare accessible for everyone.
+                  Modern doctor booking platform for secure, fast, and reliable service management. Making skilled help accessible for everyone.
                 </p>
                 <div className="flex gap-4">
                   {[
@@ -47,7 +47,7 @@ const Layout = ({ children }) => {
                 <ul className="mt-6 space-y-4">
                   <li><Link to="/" className="text-sm text-slate-600 hover:text-brand-600 transition-colors">Home</Link></li>
                   <li><Link to="/doctors" className="text-sm text-slate-600 hover:text-brand-600 transition-colors">Find Doctors</Link></li>
-                  <li><Link to="/dashboard" className="text-sm text-slate-600 hover:text-brand-600 transition-colors">Book Appointment</Link></li>
+                  <li><Link to="/dashboard" className="text-sm text-slate-600 hover:text-brand-600 transition-colors">Book Service</Link></li>
                 </ul> 
               </div>
 
@@ -83,7 +83,7 @@ const Layout = ({ children }) => {
 
             <div className="mt-16 border-t border-slate-100 pt-8 flex flex-col items-center justify-between gap-4 md:flex-row">
               <p className="text-xs font-medium text-slate-500">
-                © 2026 Prescripto. All rights reserved.
+                © 2026 Perscripto. All rights reserved.
               </p>
               <div className="flex gap-6">
                 <Link to="/terms" className="text-xs text-slate-400 hover:text-slate-600 transition-colors">Terms</Link>
