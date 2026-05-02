@@ -10,10 +10,17 @@ import { DashboardIcon, AppointmentIcon, FileIcon, ProfileIcon, IconWrapper } fr
 import Loader from "../../components/Loader";
 import { useAuth } from "../../state/AuthContext";
 import DoctorReplyModal from "./components/DoctorReplyModal";
+import VideoCall from "../../components/VideoCall";
 
 const WEEKDAY_OPTIONS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DEFAULT_SLOT = { start: "09:00", end: "17:00" };
 const PLATFORM_COMMISSION_RATE = 0.2;
+
+const apptStatus = (a) => String(a?.status ?? "").toLowerCase();
+const canUseVideo = (a) => {
+  const s = apptStatus(a);
+  return s === "accepted" || s === "in-progress";
+};
 
 const convertTo12Hour = (time24) => {
   if (!time24) return "";
@@ -57,6 +64,7 @@ const DoctorDashboard = () => {
   const [reviews, setReviews] = useState([]);
   const [replyModal, setReplyModal] = useState({ isOpen: false, reviewId: null, response: "" });
   const [prescriptionModal, setPrescriptionModal] = useState({ isOpen: false, appointment: null });
+  const [videoCall, setVideoCall] = useState({ open: false, roomId: null });
   const navigate = useNavigate();
 
   const loadProfile = async () => {
@@ -170,6 +178,11 @@ const DoctorDashboard = () => {
     { label: "Completed", value: stats.completed, icon: AppointmentIcon },
   ];
 
+  const videoReadyAppointments = useMemo(
+    () => appointments.filter((a) => canUseVideo(a)).sort((x, y) => `${x.date} ${x.timeSlot}`.localeCompare(`${y.date} ${y.timeSlot}`)),
+    [appointments]
+  );
+
   const notifications = useMemo(() => {
     const list = [];
     appointments.forEach((a) => {
@@ -213,22 +226,14 @@ const DoctorDashboard = () => {
   };
 
   const handleVideoCall = async (appointment) => {
-    const appointmentTime = new Date(`${appointment.date}T${appointment.timeSlot}:00`);
-    const now = new Date();
-
-    const diffMs = appointmentTime - now;
-    const diffMins = diffMs / (1000 * 60);
-
-    if (diffMins > 5) {
-      toast.error("Please wait. Call can only be started 5 mins before scheduled time.");
-      return;
+    try {
+      if (apptStatus(appointment) === "accepted") {
+        await updateStatus(appointment._id, "in-progress");
+      }
+      setVideoCall({ open: true, roomId: appointment._id });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not open video call");
     }
-
-    if (appointment.status === "accepted") {
-      await updateStatus(appointment._id, "in-progress");
-    }
-
-    window.open(`https://meet.jit.si/Perscripto-Booking-${appointment._id}`, "_blank");
   };
 
   const statusBadge = (status) => {
@@ -295,7 +300,12 @@ const DoctorDashboard = () => {
         notifications={notifications}
         navItems={[
           { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
-          { id: "appointments", label: "Bookings", icon: AppointmentIcon, hasNotification: appointments.some((a) => a.status === "pending") },
+          {
+            id: "appointments",
+            label: "Bookings",
+            icon: AppointmentIcon,
+            hasNotification: appointments.some((a) => apptStatus(a) === "pending" || canUseVideo(a)),
+          },
           { id: "reviews", label: "Patient Reviews", icon: FileIcon },
           { id: "profile", label: "Profile & account", icon: ProfileIcon },
         ]}
@@ -319,6 +329,46 @@ const DoctorDashboard = () => {
                     </article>
                   ))}
                 </section>
+
+                {videoReadyAppointments.length > 0 && (
+                  <section className="rounded-2xl border border-indigo-100 bg-white p-5 shadow-sm">
+                    <h3 className="text-lg font-bold text-slate-900">Video consultations</h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Start or rejoin a WebRTC call. Full list is under <span className="font-semibold text-slate-700">Bookings</span>.
+                    </p>
+                    <ul className="mt-4 space-y-3">
+                      {videoReadyAppointments.map((a) => (
+                        <li
+                          key={a._id}
+                          className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div>
+                            <p className="font-semibold text-slate-900">{a.patient?.name || "Patient"}</p>
+                            <p className="text-xs text-slate-500">
+                              {a.date} {a.timeSlot} · <span className="capitalize">{apptStatus(a)}</span>
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500"
+                              onClick={() => handleVideoCall(a)}
+                            >
+                              {apptStatus(a) === "in-progress" ? "Rejoin video" : "Video call"}
+                            </button>
+                            <button
+                              type="button"
+                              className={`rounded-lg px-3 py-1.5 text-xs font-semibold text-white ${apptStatus(a) === "in-progress" ? "bg-rose-600 hover:bg-rose-500" : "bg-brand-600 hover:bg-brand-500"}`}
+                              onClick={() => updateStatus(a._id, "awaiting-payment")}
+                            >
+                              {apptStatus(a) === "in-progress" ? "End call" : "Complete"}
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
@@ -428,7 +478,7 @@ const DoctorDashboard = () => {
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex flex-wrap gap-2">
-                                {a.status === "pending" && (
+                                {apptStatus(a) === "pending" && (
                                   <>
                                     <button className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => updateStatus(a._id, "accepted")}>
                                       Accept
@@ -438,30 +488,34 @@ const DoctorDashboard = () => {
                                     </button>
                                   </>
                                 )}
-                                {(a.status === "accepted" || a.status === "in-progress") && (
+                                {canUseVideo(a) && (
                                   <>
-                                    <button className="rounded bg-indigo-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => handleVideoCall(a)}>
-                                      {a.status === "in-progress" ? "Rejoin Call" : "Video Call"}
+                                    <button
+                                      className="rounded bg-indigo-600 px-2 py-1 text-xs font-semibold text-white"
+                                      type="button"
+                                      onClick={() => handleVideoCall(a)}
+                                    >
+                                      {apptStatus(a) === "in-progress" ? "Rejoin video" : "Video call"}
                                     </button>
                                     <button
-                                      className={`rounded px-2 py-1 text-xs font-semibold text-white ${a.status === "in-progress" ? "bg-rose-600" : "bg-brand-600"}`}
+                                      className={`rounded px-2 py-1 text-xs font-semibold text-white ${apptStatus(a) === "in-progress" ? "bg-rose-600" : "bg-brand-600"}`}
                                       type="button"
                                       onClick={() => updateStatus(a._id, "awaiting-payment")}
                                     >
-                                      {a.status === "in-progress" ? "End Call" : "Complete"}
+                                      {apptStatus(a) === "in-progress" ? "End Call" : "Complete"}
                                     </button>
                                     <button className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => setPrescriptionModal({ isOpen: true, appointment: a })}>
-                                      Add Service Note
+                                      Prescription
                                     </button>
                                   </>
                                 )}
-                                {a.status === "completed" && (
+                                {apptStatus(a) === "completed" && (
                                   <>
                                     <button className="cursor-default rounded bg-emerald-100 border border-emerald-300 px-2 py-1 text-xs font-semibold text-emerald-700" type="button">
                                       ✓ Payment Received
                                     </button>
                                     <button className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => setPrescriptionModal({ isOpen: true, appointment: a })}>
-                                      Add Service Note
+                                      Prescription
                                     </button>
                                   </>
                                 )}
@@ -656,6 +710,13 @@ const DoctorDashboard = () => {
           }}
         />
       )}
+
+      <VideoCall
+        open={videoCall.open}
+        roomId={videoCall.roomId}
+        role="doctor"
+        onClose={() => setVideoCall({ open: false, roomId: null })}
+      />
     </>
   );
 };

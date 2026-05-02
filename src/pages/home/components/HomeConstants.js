@@ -1,8 +1,8 @@
 export const HERO_IMAGES = [
-  "https://images.unsplash.com/photo-1581091215367-59ab6dcef9ac?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=900&q=80",
+    "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=900&q=80",
 ];
 
 export const TOP_SPECIALITIES = [
@@ -12,6 +12,32 @@ export const TOP_SPECIALITIES = [
   "Pediatrician",
   "Neurologist",
   "Orthopedic Surgeon",
+];
+
+/** Doctor registration & profile specialization options (medical — not trade/worker categories) */
+export const DOCTOR_SIGNUP_SPECIALIZATIONS = [
+  "General Physician",
+  "Family Medicine",
+  "Internal Medicine",
+  "Cardiologist",
+  "Dermatologist",
+  "Pediatrician",
+  "Neurologist",
+  "Orthopedic Surgeon",
+  "Psychiatrist",
+  "Gynecologist",
+  "ENT Specialist",
+  "Ophthalmologist",
+  "Urologist",
+  "Oncologist",
+  "Gastroenterologist",
+  "Pulmonologist",
+  "Endocrinologist",
+  "Nephrologist",
+  "Rheumatologist",
+  "Radiologist",
+  "Anesthesiologist",
+  "General Surgeon",
 ];
 
 export const HOW_IT_WORKS_STEPS = [

@@ -14,6 +14,7 @@ import PatientWorkersSection from "./components/PatientWorkersSection";
 import PatientHistorySection from "./components/PatientHistorySection";
 import PatientPaymentHistorySection from "./components/PatientPaymentHistorySection";
 import PatientSettingsSection from "./components/PatientSettingsSection";
+import VideoCall from "../../components/VideoCall";
 
 const formatServiceFee = (fee) => {
   if (!fee || fee === 0) return "Free";
@@ -47,6 +48,7 @@ const PatientDashboard = () => {
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [paymentModal, setPaymentModal] = useState({ isOpen: false, appointmentId: null, doctorName: "" });
   const [reviewModal, setReviewModal] = useState({ isOpen: false, appointmentId: null, doctorName: "", rating: 5, comment: "" });
+  const [videoCall, setVideoCall] = useState({ open: false, roomId: null });
   const [healthSummary, setHealthSummary] = useState(DEFAULT_HEALTH_SUMMARY);
   const [savingHealthSummary, setSavingHealthSummary] = useState(false);
   const prevAppointmentsRef = useRef([]);
@@ -82,7 +84,9 @@ const PatientDashboard = () => {
         data.forEach((newAppt) => {
           const oldAppt = prevAppointmentsRef.current.find((a) => a._id === newAppt._id);
           if (oldAppt && oldAppt.status !== "in-progress" && newAppt.status === "in-progress") {
-            toast.success(`${newAppt.doctor?.name || "Your doctor"} has started your video call!`, { duration: 8000 });
+            toast.success(`${newAppt.doctor?.name || "Your doctor"} has marked your appointment as in progress.`, {
+              duration: 8000,
+            });
           }
         });
       }
@@ -215,18 +219,15 @@ const PatientDashboard = () => {
   };
 
   const handleVideoCall = (appointment) => {
-    const appointmentTime = new Date(`${appointment.date}T${appointment.timeSlot}:00`);
-    const now = new Date();
-
-    const diffMs = appointmentTime - now;
-    const diffMins = diffMs / (1000 * 60);
-
-    if (diffMins > 5) {
-      toast.error("Please wait. You can only join the call 5 mins before scheduled time.");
-      return;
+    if (appointment.status !== "in-progress") {
+      const appointmentTime = new Date(`${appointment.date}T${appointment.timeSlot}:00`);
+      const diffMins = (appointmentTime - new Date()) / (1000 * 60);
+      if (diffMins > 5) {
+        toast.error("Please wait. You can only join up to 5 minutes before your scheduled time.");
+        return;
+      }
     }
-
-    window.open(`https://meet.jit.si/Perscripto-Booking-${appointment._id}`, "_blank");
+    setVideoCall({ open: true, roomId: appointment._id });
   };
 
   const openPaymentModal = async (id) => {
@@ -538,6 +539,13 @@ const PatientDashboard = () => {
       )}
 
       <PatientReviewModal reviewModal={reviewModal} setReviewModal={setReviewModal} onSubmit={submitReview} />
+
+      <VideoCall
+        open={videoCall.open}
+        roomId={videoCall.roomId}
+        role="patient"
+        onClose={() => setVideoCall({ open: false, roomId: null })}
+      />
     </>
   );
 };

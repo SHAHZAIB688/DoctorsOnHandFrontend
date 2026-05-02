@@ -1,24 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import LogoImg from "../../assets/logo2.jpeg";
+import api from "../../api/client";
 import { useAuth } from "../../state/AuthContext";
 import VerificationModal from "../../components/VerificationModal";
 import Dropdown from "../../components/Dropdown";
 import AuthBrandPanel from "../auth/components/AuthBrandPanel";
-
-const SPECIALIZATIONS = [
-  "Electrician",
-  "Plumber",
-  "Carpenter",
-  "Painter",
-  "HVAC Technician",
-  "General Technician",
-];
+import { DOCTOR_SIGNUP_SPECIALIZATIONS } from "../home/components/HomeConstants";
 
 const ROLES = [
   { value: "patient", label: "Join as Patient" },
-  { value: "doctor", label: "Join as Skilled Doctor" },
+  { value: "doctor", label: "Join as Doctor" },
 ];
 
 const SignupPage = () => {
@@ -28,14 +21,37 @@ const SignupPage = () => {
     phone: "",
     password: "",
     role: "patient",
-    specialization: "General Technician",
+    specialization: "General Physician",
     experience: "",
     degreeFile: null,
   });
   const [loading, setLoading] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [doctorSpecializations, setDoctorSpecializations] = useState(DOCTOR_SIGNUP_SPECIALIZATIONS);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await api.get("/meta/doctor-specializations");
+        const list = data?.specializations;
+        if (!cancelled && Array.isArray(list) && list.length > 0) {
+          setDoctorSpecializations(list);
+          setForm((p) => ({
+            ...p,
+            specialization: list.includes(p.specialization) ? p.specialization : list[0],
+          }));
+        }
+      } catch {
+        /* keep bundled DOCTOR_SIGNUP_SPECIALIZATIONS */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const onChange = (e) => {
     const name = e.target.name;
@@ -137,17 +153,29 @@ const SignupPage = () => {
             <Dropdown
               options={ROLES}
               value={form.role}
-              onChange={(val) => onDropdownChange("role", val)}
+              onChange={(val) => {
+                setForm((p) => ({
+                  ...p,
+                  role: val,
+                  ...(val === "doctor"
+                    ? {
+                        specialization: doctorSpecializations.includes(p.specialization)
+                          ? p.specialization
+                          : doctorSpecializations[0],
+                      }
+                    : {}),
+                }));
+              }}
               placeholder="Select Role"
             />
 
             {form.role === "doctor" && (
               <div className="grid gap-4 animate-in slide-in-from-left-2">
                 <Dropdown
-                  options={SPECIALIZATIONS}
+                  options={doctorSpecializations}
                   value={form.specialization}
                   onChange={(val) => onDropdownChange("specialization", val)}
-                  placeholder="Select Service Category"
+                  placeholder="Select medical specialization"
                 />
                 <input
                   name="experience"

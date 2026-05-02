@@ -49,10 +49,10 @@ const PatientHistorySection = ({ appointments, openPaymentModal, handleVideoCall
               {(a.status === "accepted" || a.status === "in-progress") && (
                 <button
                   type="button"
-                  className="animate-pulse rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700"
+                  className="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700"
                   onClick={() => handleVideoCall(a)}
                 >
-                  {a.status === "accepted" ? "Join call" : "Join in-progress call"}
+                  {a.status === "accepted" ? "Join video" : "Rejoin video"}
                 </button>
               )}
               {a.status === "pending" && (
