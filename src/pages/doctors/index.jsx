@@ -26,7 +26,11 @@ const DoctorsPage = () => {
         setLoading(false);
       }
     };
+    
     fetchDoctors();
+    // Refresh doctors list every 30 seconds to reflect specialization changes
+    const intervalId = setInterval(fetchDoctors, 30000);
+    return () => clearInterval(intervalId);
   }, []);
 
   useEffect(() => {

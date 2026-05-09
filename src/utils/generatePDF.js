@@ -19,11 +19,11 @@ export const generatePDF = (prescription, doctorName, specialization) => {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  doc.text("WORKER ZONE", 14, 20);
+  doc.text("Perscripto", 14, 20);
   
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Digital Service Platform", 132, 20);
+  doc.text("Medical Consultation Platform", 132, 20);
 
   // 2. Doctor Info
   doc.setTextColor(...primaryColor);

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "https://workerzonebackend-production.up.railway.app/api";
+  import.meta.env.VITE_API_URL || "https://perscriptobackend-production.up.railway.app/api";
 
 const backendBaseUrl = API_BASE_URL.endsWith("/api")
   ? API_BASE_URL.slice(0, -4)

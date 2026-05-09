@@ -10,7 +10,7 @@ import PatientBookingModal from "./components/PatientBookingModal";
 import PatientReviewModal from "./components/PatientReviewModal";
 import PatientDashboardOverviewSection from "./components/PatientDashboardOverviewSection";
 import PatientHealthSummarySection from "./components/PatientHealthSummarySection";
-import PatientWorkersSection from "./components/PatientWorkersSection";
+import PatientDoctorsSection from "./components/PatientDoctorsSection";
 import PatientHistorySection from "./components/PatientHistorySection";
 import PatientPaymentHistorySection from "./components/PatientPaymentHistorySection";
 import PatientSettingsSection from "./components/PatientSettingsSection";
@@ -106,8 +106,13 @@ const PatientDashboard = () => {
     fetchAppointments();
     fetchHealthSummary();
 
-    const intervalId = setInterval(fetchAppointments, 10000);
-    return () => clearInterval(intervalId);
+    // Refresh appointments every 10 seconds and doctors every 30 seconds
+    const appointmentIntervalId = setInterval(fetchAppointments, 10000);
+    const doctorIntervalId = setInterval(fetchDoctors, 30000);
+    return () => {
+      clearInterval(appointmentIntervalId);
+      clearInterval(doctorIntervalId);
+    };
   }, []);
 
   useEffect(() => {
@@ -163,13 +168,21 @@ const PatientDashboard = () => {
 
       setLoadingSlots(true);
       try {
+        // Format date to ensure YYYY-MM-DD format from input
+        const dateStr = form.date;
+        console.log(`Fetching slots for doctor ${form.doctorProfileId} on date ${dateStr}`);
+        
         const { data } = await patient.get(`/doctors/available-slots/${form.doctorProfileId}`, {
-          params: { date: form.date },
+          params: { date: dateStr },
         });
+        
+        console.log(`Received ${data.length} available slots:`, data);
         setAvailableSlots(Array.isArray(data) ? data : []);
       } catch (error) {
+        console.error("Error fetching slots:", error);
         setAvailableSlots([]);
-        toast.error("Failed to load available time slots");
+        const errorMsg = error.response?.data?.message || "Failed to load available time slots";
+        toast.error(errorMsg);
       } finally {
         setLoadingSlots(false);
       }
@@ -325,8 +338,8 @@ const PatientDashboard = () => {
       if (a.prescription) {
         list.push({
           id: `rx-${a._id}`,
-          title: "New Service Note",
-          message: `${doctorLabel(a)} has sent you a service note.`,
+          title: "New Prescription",
+          message: `${doctorLabel(a)} has sent you a prescription.`,
           type: "info",
           linkTab: "history",
         });
@@ -437,7 +450,7 @@ const PatientDashboard = () => {
             )}
 
             {activeTab === "doctors" && (
-              <PatientWorkersSection
+              <PatientDoctorsSection
                 doctorFilter={doctorFilter}
                 setDoctorFilter={setDoctorFilter}
                 doctorCategories={doctorCategories}

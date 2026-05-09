@@ -11,6 +11,7 @@ import Loader from "../../components/Loader";
 import { useAuth } from "../../state/AuthContext";
 import DoctorReplyModal from "./components/DoctorReplyModal";
 import VideoCall from "../../components/VideoCall";
+import { DOCTOR_SIGNUP_SPECIALIZATIONS } from "../home/components/HomeConstants";
 
 const WEEKDAY_OPTIONS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 const DEFAULT_SLOT = { start: "09:00", end: "17:00" };
@@ -60,7 +61,8 @@ const DoctorDashboard = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
-  const [editForm, setEditForm] = useState({ consultationFee: 0, bio: "", experienceYears: 0 });
+  const [editForm, setEditForm] = useState({ consultationFee: 0, bio: "", experienceYears: 0, specialization: "General Physician" });
+  const [doctorSpecializations, setDoctorSpecializations] = useState(DOCTOR_SIGNUP_SPECIALIZATIONS);
   const [reviews, setReviews] = useState([]);
   const [replyModal, setReplyModal] = useState({ isOpen: false, reviewId: null, response: "" });
   const [prescriptionModal, setPrescriptionModal] = useState({ isOpen: false, appointment: null });
@@ -71,10 +73,20 @@ const DoctorDashboard = () => {
     try {
       const { data } = await patient.get("/doctors/profile");
       setProfile(data);
+      // Fetch latest specializations list
+      try {
+        const { data: specData } = await patient.get("/meta/doctor-specializations");
+        if (Array.isArray(specData?.specializations) && specData.specializations.length > 0) {
+          setDoctorSpecializations(specData.specializations);
+        }
+      } catch {
+        // Keep bundled specializations
+      }
       setEditForm({
         consultationFee: data.consultationFee || 0,
         bio: data.bio || "",
         experienceYears: data.experienceYears || 0,
+        specialization: data.specialization || "General Physician",
       });
       setAvailability(normalizeSingleAvailability(data.availability || []));
     } catch (error) {
@@ -84,12 +96,21 @@ const DoctorDashboard = () => {
 
   const saveProfile = async () => {
     try {
-      await patient.put("/doctors/profile", editForm);
+      const payload = {
+        consultationFee: Number(editForm.consultationFee) || 0,
+        bio: String(editForm.bio || "").trim(),
+        experienceYears: Number(editForm.experienceYears) || 0,
+        specialization: String(editForm.specialization || "").trim(),
+      };
+      
+      await patient.put("/doctors/profile", payload);
       toast.success("Profile updated successfully");
       setEditMode(false);
-      loadProfile();
+      await loadProfile();
     } catch (error) {
-      toast.error("Failed to update profile");
+      const errorMsg = error.response?.data?.message || error.message || "Failed to update profile";
+      toast.error(errorMsg);
+      console.error("Profile update error:", error);
     }
   };
 
@@ -558,6 +579,7 @@ const DoctorDashboard = () => {
                             consultationFee: profile?.consultationFee || 0,
                             bio: profile?.bio || "",
                             experienceYears: profile?.experienceYears || 0,
+                            specialization: profile?.specialization || "General Physician",
                           });
                         }}
                         className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
@@ -576,13 +598,38 @@ const DoctorDashboard = () => {
                     <div>
                       <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Verification</h4>
                       <div className="rounded-xl border border-slate-200 p-4 bg-slate-50">
-                        <p className="text-sm">
-                          <span className="font-semibold text-slate-700">Specialization:</span> {profile?.specialization}
-                        </p>
-                        <div className="flex items-center mt-2">
-                          <span className="font-semibold text-slate-700 text-sm mr-2">Account status:</span>
-                          <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(profile?.status)}`}>{profile?.status}</span>
-                        </div>
+                        {!editMode ? (
+                          <>
+                            <p className="text-sm">
+                              <span className="font-semibold text-slate-700">Specialization:</span> {profile?.specialization}
+                            </p>
+                            <div className="flex items-center mt-2">
+                              <span className="font-semibold text-slate-700 text-sm mr-2">Account status:</span>
+                              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(profile?.status)}`}>{profile?.status}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="mb-3">
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">Specialization</label>
+                              <select
+                                value={editForm.specialization || "General Physician"}
+                                onChange={(e) => setEditForm({ ...editForm, specialization: e.target.value })}
+                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                              >
+                                {doctorSpecializations.map((spec) => (
+                                  <option key={spec} value={spec}>
+                                    {spec}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="flex items-center mt-2">
+                              <span className="font-semibold text-slate-700 text-sm mr-2">Account status:</span>
+                              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(profile?.status)}`}>{profile?.status}</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
 

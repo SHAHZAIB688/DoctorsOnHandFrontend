@@ -44,6 +44,9 @@ const DoctorDetailsPage = () => {
     };
 
     loadData();
+    // Refresh doctor details every 30 seconds to reflect specialization changes
+    const intervalId = setInterval(loadData, 30000);
+    return () => clearInterval(intervalId);
   }, [doctorId, navigate]);
 
   const openBooking = () => {
