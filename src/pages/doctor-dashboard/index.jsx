@@ -14,6 +14,7 @@ import Loader from "../../components/Loader";
 import { useAuth } from "../../state/AuthContext";
 import DoctorReplyModal from "./components/DoctorReplyModal";
 import VideoCall from "../../components/VideoCall";
+import Dropdown from "../../components/Dropdown";
 import { DOCTOR_SIGNUP_SPECIALIZATIONS } from "../home/components/HomeConstants";
 
 const WEEKDAY_OPTIONS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
@@ -410,31 +411,21 @@ const DoctorDashboard = () => {
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-slate-700">{t("dash.doctor.workingDays")}</label>
                       <div className="flex flex-wrap items-center gap-3">
-                        <select
+                        <Dropdown
+                          options={WEEKDAY_OPTIONS.map((d) => ({ value: d, label: t(`dash.doctor.weekdays.${d}`) }))}
                           value={availability[0]?.startDay || "monday"}
-                          className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm capitalize outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 transition-all"
-                          onChange={(e) => setAvailability((p) => [{ ...(p[0] || DEFAULT_SLOT), startDay: e.target.value.toLowerCase() }])}
-                        >
-                          {WEEKDAY_OPTIONS.map((d) => (
-                            <option key={d} value={d}>
-                              {t(`dash.doctor.weekdays.${d}`)}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => setAvailability((p) => [{ ...(p[0] || DEFAULT_SLOT), startDay: val.toLowerCase() }])}
+                          className="w-32 h-10 capitalize"
+                        />
 
                         <span className="text-slate-400 font-medium">{t("dash.doctor.to")}</span>
 
-                        <select
+                        <Dropdown
+                          options={WEEKDAY_OPTIONS.map((d) => ({ value: d, label: t(`dash.doctor.weekdays.${d}`) }))}
                           value={availability[0]?.endDay || "friday"}
-                          className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm capitalize outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 transition-all"
-                          onChange={(e) => setAvailability((p) => [{ ...(p[0] || DEFAULT_SLOT), endDay: e.target.value.toLowerCase() }])}
-                        >
-                          {WEEKDAY_OPTIONS.map((d) => (
-                            <option key={d} value={d}>
-                              {t(`dash.doctor.weekdays.${d}`)}
-                            </option>
-                          ))}
-                        </select>
+                          onChange={(val) => setAvailability((p) => [{ ...(p[0] || DEFAULT_SLOT), endDay: val.toLowerCase() }])}
+                          className="w-32 h-10 capitalize"
+                        />
                       </div>
                     </div>
 
@@ -625,17 +616,12 @@ const DoctorDashboard = () => {
                           <>
                             <div className="mb-3">
                               <label className="block text-xs font-semibold text-slate-700 mb-1">{t("dash.doctor.specialization")}</label>
-                              <select
+                              <Dropdown
+                                options={doctorSpecializations.map((spec) => ({ value: spec, label: spec }))}
                                 value={editForm.specialization || "General Physician"}
-                                onChange={(e) => setEditForm({ ...editForm, specialization: e.target.value })}
-                                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-                              >
-                                {doctorSpecializations.map((spec) => (
-                                  <option key={spec} value={spec}>
-                                    {spec}
-                                  </option>
-                                ))}
-                              </select>
+                                onChange={(val) => setEditForm({ ...editForm, specialization: val })}
+                                className="w-full h-10"
+                              />
                             </div>
                             <div className="flex items-center mt-2">
                               <span className="font-semibold text-slate-700 text-sm me-2">{t("dash.doctor.accountStatus")}:</span>

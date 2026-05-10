@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import Dropdown from "../../../components/Dropdown";
 
 const PatientReviewModal = ({ reviewModal, setReviewModal, onSubmit }) => {
   const { t } = useTranslation();
@@ -14,17 +15,15 @@ const PatientReviewModal = ({ reviewModal, setReviewModal, onSubmit }) => {
         <form onSubmit={onSubmit} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">{t("dash.patient.reviewModal.rating")}</label>
-            <select
+            <Dropdown
+              options={[5, 4, 3, 2, 1].map((r) => ({
+                value: r,
+                label: r === 1 ? t("dash.patient.reviewModal.stars", { n: r }) : t("dash.patient.reviewModal.starsPlural", { n: r }),
+              }))}
               value={reviewModal.rating}
-              onChange={(e) => setReviewModal((prev) => ({ ...prev, rating: Number(e.target.value) }))}
-              className="w-full rounded-xl border border-slate-300 p-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-            >
-              {[5, 4, 3, 2, 1].map((r) => (
-                <option key={r} value={r}>
-                  {r === 1 ? t("dash.patient.reviewModal.stars", { n: r }) : t("dash.patient.reviewModal.starsPlural", { n: r })}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setReviewModal((prev) => ({ ...prev, rating: Number(val) }))}
+              className="w-full h-10"
+            />
           </div>
 
           <div>

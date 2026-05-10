@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { buildBackendAssetUrl } from "../../../api/client";
+import Dropdown from "../../../components/Dropdown";
 
 const PatientDoctorsSection = ({
   doctorFilter,
@@ -17,17 +18,15 @@ const PatientDoctorsSection = ({
       <h3 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{t("dash.patient.doctors.title")}</h3>
       <p className="mt-1 text-sm text-slate-600">{t("dash.patient.doctors.subtitle")}</p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-        <select
+        <Dropdown
+          options={doctorCategories.map((category) => ({
+            value: category,
+            label: category === "all" ? t("dash.patient.doctors.allCategories") : category,
+          }))}
           value={doctorFilter.specialization}
-          onChange={(e) => setDoctorFilter((p) => ({ ...p, specialization: e.target.value }))}
-          className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 sm:w-52"
-        >
-          {doctorCategories.map((category) => (
-            <option key={category} value={category}>
-              {category === "all" ? t("dash.patient.doctors.allCategories") : category}
-            </option>
-          ))}
-        </select>
+          onChange={(val) => setDoctorFilter((p) => ({ ...p, specialization: val }))}
+          className="w-full sm:w-52 h-10"
+        />
         <input
           placeholder={t("dash.patient.doctors.searchPh")}
           value={doctorFilter.search}

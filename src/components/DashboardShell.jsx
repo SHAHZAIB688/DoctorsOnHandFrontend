@@ -77,7 +77,7 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
       <section className="flex flex-1 flex-col overflow-hidden">
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur-md lg:px-8 lg:py-4">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
-            <div className="flex items-center gap-2 sm:gap-4 overflow-hidden">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <button 
                 onClick={() => setIsSidebarOpen(true)}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-600 transition-colors hover:bg-slate-100 lg:hidden"
@@ -86,9 +86,9 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
                 </svg>
               </button>
-              <div className="truncate">
-                <h2 className="text-base font-semibold tracking-tight text-[#2b3546] sm:text-xl truncate">{title}</h2>
-                <p className="hidden text-[10px] font-medium text-slate-500 sm:block">{subtitle}</p>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-base font-semibold tracking-tight text-[#2b3546] sm:text-xl">{title}</h2>
+                <p className="hidden text-xs font-medium text-slate-500 sm:block mt-1">{subtitle}</p>
               </div>
             </div>
             
@@ -154,8 +154,8 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
       
       <div className="flex items-center gap-2 sm:gap-3">
                 <div className="hidden text-end sm:block">
-                  <p className="text-sm font-bold text-slate-900 leading-none">{user?.name}</p>
-                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none">{roleLabel}</p>
+                  <p className="text-sm font-bold text-slate-900">{user?.name}</p>
+                  <p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-400">{roleLabel}</p>
                 </div>
                 <img 
                   src={`https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(user?.name || "User")}`}

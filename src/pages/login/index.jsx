@@ -33,7 +33,16 @@ const LoginPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4 sm:p-6 md:p-12">
       <div className="relative flex w-full max-w-4xl min-h-fit flex-col overflow-hidden rounded-[1.5rem] bg-white shadow-2xl sm:rounded-[2rem] md:flex-row md:rounded-[2.5rem]">
-        <div className="absolute end-4 top-4 z-20 md:end-8 md:top-8">
+        <div className="absolute end-4 top-4 z-20 flex items-center gap-4 md:end-8 md:top-8">
+          <Link
+            to="/"
+            className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-brand-600"
+          >
+            <svg className="h-4 w-4 rtl:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span className="hidden sm:block">{t("nav.home")}</span>
+          </Link>
           <LanguageSwitcher />
         </div>
         <AuthBrandPanel logoSrc={LogoImg} />

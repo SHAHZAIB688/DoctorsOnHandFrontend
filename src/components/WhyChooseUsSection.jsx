@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AppointmentIcon, DoctorIcon, FileIcon } from "./icons";
 
@@ -49,11 +49,7 @@ const WhyChooseUsSection = () => {
     [t]
   );
 
-  const [activeId, setActiveId] = useState(FEATURE_IDS[0]);
-  const activeFeature = useMemo(
-    () => features.find((f) => f.id === activeId) || features[0],
-    [features, activeId]
-  );
+
 
   return (
     <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
@@ -62,39 +58,22 @@ const WhyChooseUsSection = () => {
         <p className="mt-2 text-sm text-slate-600 md:text-base">{t("home.whySubtitle")}</p>
       </div>
 
-      <div className="rounded-2xl border border-brand-100 bg-brand-50 p-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-brand-700">{t("home.whyHighlight")}</p>
-        <div className="mt-2 flex items-center gap-2 text-brand-700">
-          <activeFeature.icon />
-          <h3 className="text-lg font-bold text-slate-900">{activeFeature.title}</h3>
-        </div>
-        <p className="mt-1 text-sm text-slate-700">{activeFeature.description}</p>
-      </div>
+
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {features.map((feature) => {
-          const isActive = feature.id === activeId;
           const Icon = feature.icon;
           return (
-            <button
+            <div
               key={feature.id}
-              type="button"
-              onClick={() => setActiveId(feature.id)}
-              className={`group rounded-2xl border p-4 text-start transition-all duration-200 ${
-                isActive
-                  ? "border-brand-300 bg-brand-50 shadow-sm"
-                  : "border-slate-200 bg-slate-50 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white hover:shadow-sm"
-              }`}
+              className="group rounded-2xl border border-slate-200 bg-slate-50 p-4 text-start transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:bg-white hover:shadow-sm"
             >
               <div className="text-brand-700">
                 <Icon />
               </div>
               <h3 className="mt-2 text-base font-semibold text-slate-900">{feature.title}</h3>
               <p className="mt-1 text-sm text-slate-600">{feature.description}</p>
-              <p className="mt-3 text-xs font-semibold text-brand-600 opacity-0 transition-opacity group-hover:opacity-100">
-                {t("home.whyClickHint")}
-              </p>
-            </button>
+            </div>
           );
         })}
       </div>

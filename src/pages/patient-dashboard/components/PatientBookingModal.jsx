@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import Dropdown from "../../../components/Dropdown";
 
 const PatientBookingModal = ({
   open,
@@ -31,22 +32,22 @@ const PatientBookingModal = ({
         </button>
         <h3 className="text-2xl font-bold tracking-tight text-slate-900">{t("dash.patient.bookingModal.title")}</h3>
         <form className="mt-5 grid gap-4" onSubmit={onSubmit}>
-          <select
-            required
+          <Dropdown
+            options={[
+              { value: "", label: t("dash.patient.bookingModal.selectDoctor") },
+              ...doctors.map((d) => ({
+                value: d._id,
+                label: `${d.user?.name} — ${d.specialization}`,
+              })),
+            ]}
             value={form.doctorProfileId}
-            onChange={(e) => {
-              setForm((p) => ({ ...p, doctorProfileId: e.target.value, timeSlot: "" }));
+            onChange={(val) => {
+              setForm((p) => ({ ...p, doctorProfileId: val, timeSlot: "" }));
               setAvailableSlots([]);
             }}
-            className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-base text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
-          >
-            <option value="">{t("dash.patient.bookingModal.selectDoctor")}</option>
-            {doctors.map((d) => (
-              <option key={d._id} value={d._id}>
-                {d.user?.name} — {d.specialization}
-              </option>
-            ))}
-          </select>
+            placeholder={t("dash.patient.bookingModal.selectDoctor")}
+            className="w-full h-12"
+          />
 
           <input
             type="date"
@@ -57,22 +58,16 @@ const PatientBookingModal = ({
             className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-base text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
           />
 
-          <select
-            required
+          <Dropdown
+            options={[
+              { value: "", label: loadingSlots ? t("dash.patient.bookingModal.loadingSlots") : availableSlots.length > 0 ? t("dash.patient.bookingModal.selectSlot") : t("dash.patient.bookingModal.noSlots") },
+              ...availableSlots.map((slot) => ({ value: slot, label: slot }))
+            ]}
             value={form.timeSlot}
-            onChange={(e) => setForm((p) => ({ ...p, timeSlot: e.target.value }))}
-            disabled={!form.date || !form.doctorProfileId || loadingSlots}
-            className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-base text-slate-700 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 disabled:bg-slate-50"
-          >
-            <option value="">
-              {loadingSlots ? t("dash.patient.bookingModal.loadingSlots") : availableSlots.length > 0 ? t("dash.patient.bookingModal.selectSlot") : t("dash.patient.bookingModal.noSlots")}
-            </option>
-            {availableSlots.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setForm((p) => ({ ...p, timeSlot: val }))}
+            placeholder={loadingSlots ? t("dash.patient.bookingModal.loadingSlots") : availableSlots.length > 0 ? t("dash.patient.bookingModal.selectSlot") : t("dash.patient.bookingModal.noSlots")}
+            className={`w-full h-12 ${!form.date || !form.doctorProfileId || loadingSlots ? "opacity-50 pointer-events-none" : ""}`}
+          />
 
           {form.timeSlot && (
             <p className="text-xs font-medium text-slate-600">

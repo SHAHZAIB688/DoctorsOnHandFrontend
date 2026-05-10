@@ -14,6 +14,31 @@
 
   html[lang="ur"] body {
     font-family: "Noto Nastaliq Urdu", ui-sans-serif, system-ui, sans-serif;
+    line-height: 2 !important;
+  }
+
+  html[lang="ur"] .leading-none,
+  html[lang="ur"] .leading-tight,
+  html[lang="ur"] .leading-snug,
+  html[lang="ur"] .leading-normal,
+  html[lang="ur"] .leading-relaxed,
+  html[lang="ur"] .leading-loose {
+    line-height: 2.2 !important;
+  }
+
+  html[lang="ur"] h1,
+  html[lang="ur"] h2,
+  html[lang="ur"] h3,
+  html[lang="ur"] h4,
+  html[lang="ur"] h5,
+  html[lang="ur"] h6,
+  html[lang="ur"] p,
+  html[lang="ur"] span,
+  html[lang="ur"] a,
+  html[lang="ur"] label,
+  html[lang="ur"] div,
+  html[lang="ur"] button {
+    padding-bottom: 0.3em;
   }
 
   input, select, textarea {

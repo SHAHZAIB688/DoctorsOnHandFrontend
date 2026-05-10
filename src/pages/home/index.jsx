@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import patient from "../../api/client";
 import WhyChooseUsSection from "../../components/WhyChooseUsSection";
 import HeroSection from "./components/HeroSection";
-import SearchBarSection from "./components/SearchBarSection";
+
 import TopSpecialitiesSection from "./components/TopSpecialitiesSection";
 import HowItWorksSection from "./components/HowItWorksSection";
 import FeaturedDoctorsSection from "./components/FeaturedDoctorsSection";
@@ -20,7 +20,7 @@ const HomePage = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
+
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
   const formatConsultationFee = (fee) => (!fee || fee === 0 ? t("common.free") : `PKR ${fee}`);
@@ -85,16 +85,12 @@ const HomePage = () => {
 
   const featuredDoctors = useMemo(() => doctors.slice(0, 3), [doctors]);
 
-  const submitSearch = (e) => {
-    e.preventDefault();
-    const q = searchQuery.trim();
-    navigate(q ? `/doctors?search=${encodeURIComponent(q)}` : "/doctors");
-  };
+
 
   return (
     <div className="space-y-16 pb-8">
       <HeroSection heroImages={HERO_IMAGES} currentImage={currentImage} />
-      <SearchBarSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSubmit={submitSearch} />
+
       <TopSpecialitiesSection specialities={topSpecialityItems} />
       <WhyChooseUsSection />
       <HowItWorksSection steps={howSteps} />
