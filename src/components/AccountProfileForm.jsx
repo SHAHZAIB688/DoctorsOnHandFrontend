@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import patient from "../api/client";
 import Loader from "./Loader";
@@ -6,12 +7,15 @@ import Loader from "./Loader";
 const AccountProfileForm = ({
   refreshUser,
   onSaved,
-  title = "Account",
-  description = "Update your name, email, phone, and password.",
+  title,
+  description,
   idPrefix = "account",
   sectionClassName = "",
   loaderClassName = "flex min-h-[240px] items-center justify-center rounded-2xl border border-slate-200 bg-white",
 }) => {
+  const { t } = useTranslation();
+  const heading = title ?? t("dash.accountForm.sectionTitle");
+  const sub = description ?? t("dash.accountForm.sectionDescription");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
@@ -36,7 +40,7 @@ const AccountProfileForm = ({
           phone: data.phone || "",
         }));
       } catch {
-        toast.error("Failed to load your profile");
+        toast.error(t("dash.accountForm.loadFail"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -44,21 +48,21 @@ const AccountProfileForm = ({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   const save = async (e) => {
     e.preventDefault();
     if (form.newPassword || form.confirmPassword || form.currentPassword) {
       if (form.newPassword !== form.confirmPassword) {
-        toast.error("New password and confirmation do not match");
+        toast.error(t("dash.accountForm.passwordMismatch"));
         return;
       }
       if (!form.currentPassword) {
-        toast.error("Enter your current password to change it");
+        toast.error(t("dash.accountForm.currentRequired"));
         return;
       }
       if (form.newPassword.length < 6) {
-        toast.error("New password must be at least 6 characters");
+        toast.error(t("dash.accountForm.passwordShort"));
         return;
       }
     }
@@ -75,7 +79,7 @@ const AccountProfileForm = ({
         payload.newPassword = form.newPassword;
       }
       await patient.put("/auth/profile", payload);
-      toast.success("Profile updated");
+      toast.success(t("dash.accountForm.updated"));
       await refreshUser();
       onSaved?.();
       setForm((prev) => ({
@@ -85,7 +89,7 @@ const AccountProfileForm = ({
         confirmPassword: "",
       }));
     } catch (err) {
-      toast.error(err.response?.data?.message || "Could not update profile");
+      toast.error(err.response?.data?.message || t("dash.accountForm.updateFail"));
     } finally {
       setSaving(false);
     }
@@ -103,13 +107,13 @@ const AccountProfileForm = ({
 
   return (
     <section className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${sectionClassName}`.trim()}>
-      <h3 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{title}</h3>
-      <p className="mt-1 text-sm text-slate-600">{description}</p>
+      <h3 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{heading}</h3>
+      <p className="mt-1 text-sm text-slate-600">{sub}</p>
 
       <form onSubmit={save} className="mt-6 grid max-w-xl gap-4">
         <div>
           <label htmlFor={pid("name")} className="mb-1 block text-sm font-medium text-slate-700">
-            Full name
+            {t("dash.accountForm.fullName")}
           </label>
           <input
             id={pid("name")}
@@ -122,7 +126,7 @@ const AccountProfileForm = ({
         </div>
         <div>
           <label htmlFor={pid("email")} className="mb-1 block text-sm font-medium text-slate-700">
-            Email
+            {t("dash.accountForm.email")}
           </label>
           <input
             id={pid("email")}
@@ -136,7 +140,7 @@ const AccountProfileForm = ({
         </div>
         <div>
           <label htmlFor={pid("phone")} className="mb-1 block text-sm font-medium text-slate-700">
-            Phone
+            {t("dash.accountForm.phone")}
           </label>
           <input
             id={pid("phone")}
@@ -150,12 +154,12 @@ const AccountProfileForm = ({
         </div>
 
         <div className="border-t border-slate-100 pt-4">
-          <p className="text-sm font-semibold text-slate-800">Change password</p>
-          <p className="mt-0.5 text-xs text-slate-500">Leave blank to keep your current password.</p>
+          <p className="text-sm font-semibold text-slate-800">{t("dash.accountForm.changePassword")}</p>
+          <p className="mt-0.5 text-xs text-slate-500">{t("dash.accountForm.passwordHint")}</p>
         </div>
         <div>
           <label htmlFor={pid("current-password")} className="mb-1 block text-sm font-medium text-slate-700">
-            Current password
+            {t("dash.accountForm.currentPassword")}
           </label>
           <input
             id={pid("current-password")}
@@ -168,7 +172,7 @@ const AccountProfileForm = ({
         </div>
         <div>
           <label htmlFor={pid("new-password")} className="mb-1 block text-sm font-medium text-slate-700">
-            New password
+            {t("dash.accountForm.newPassword")}
           </label>
           <input
             id={pid("new-password")}
@@ -181,7 +185,7 @@ const AccountProfileForm = ({
         </div>
         <div>
           <label htmlFor={pid("confirm-password")} className="mb-1 block text-sm font-medium text-slate-700">
-            Confirm new password
+            {t("dash.accountForm.confirmPassword")}
           </label>
           <input
             id={pid("confirm-password")}
@@ -199,7 +203,7 @@ const AccountProfileForm = ({
             disabled={saving}
             className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-300"
           >
-            {saving ? "Saving..." : "Save account"}
+            {saving ? t("dash.accountForm.saving") : t("dash.accountForm.saveAccount")}
           </button>
         </div>
       </form>

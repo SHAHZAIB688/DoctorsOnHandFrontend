@@ -45,7 +45,7 @@ const Dropdown = ({ options, value, onChange, placeholder = "Select option", cla
                     onChange(optValue);
                     setIsOpen(false);
                   }}
-                  className={`flex w-full items-center rounded-xl px-4 py-3 text-left text-sm font-bold transition-all ${isSelected
+                  className={`flex w-full items-center rounded-xl px-4 py-3 text-start text-sm font-bold transition-all ${isSelected
                       ? "bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200"
                       : "text-slate-600 hover:bg-slate-50 hover:text-brand-600"
                     }`}

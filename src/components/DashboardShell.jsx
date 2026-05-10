@@ -1,9 +1,20 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../state/AuthContext";
 import DashboardSidebar from "./DashboardSidebar";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { BellIcon } from "./icons";
 
+const roleShellLabel = (role, t) => {
+  const r = String(role || "").toLowerCase();
+  if (r === "patient") return t("dash.shell.rolePatient");
+  if (r === "doctor") return t("dash.shell.roleDoctor");
+  if (r === "admin") return t("dash.shell.roleAdmin");
+  return role || "";
+};
+
 const DashboardShell = ({ title, subtitle, navItems, children, notifications, defaultTab = "dashboard" }) => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -17,6 +28,8 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
   const safeNotifications = Array.isArray(notifications) ? notifications : [];
   const unreadNotifications = safeNotifications.filter(n => !readIds.includes(n.id));
   const hasUnread = unreadNotifications.length > 0 || navItems?.some(item => item.hasNotification);
+
+  const roleLabel = useMemo(() => roleShellLabel(user?.role, t), [user?.role, t]);
 
   useEffect(() => {
     localStorage.setItem("readNotifications", JSON.stringify(readIds));
@@ -79,7 +92,8 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
               </div>
             </div>
             
-    <div className="flex items-center gap-3 sm:gap-6 shrink-0">
+    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+      <LanguageSwitcher className="hidden sm:flex" />
       <div className="relative" ref={notificationRef}>
         <button 
           onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
@@ -87,7 +101,7 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
         >
           <BellIcon />
           {hasUnread && (
-            <span className="absolute right-2 top-2 flex h-2 w-2">
+            <span className="absolute end-2 top-2 flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
             </span>
@@ -95,14 +109,14 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
         </button>
 
         {isNotificationsOpen && (
-          <div className="absolute right-0 mt-3 w-80 origin-top-right rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl ring-1 ring-black/5 focus:outline-none">
+          <div className="absolute end-0 mt-3 w-80 origin-top-end rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl ring-1 ring-black/5 focus:outline-none">
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-50">
-              <h3 className="text-sm font-bold text-slate-900">Notifications</h3>
+              <h3 className="text-sm font-bold text-slate-900">{t("dash.shell.notifications")}</h3>
               <div className="flex items-center gap-2">
                 {unreadNotifications.length > 0 && (
-                  <button onClick={markAllAsRead} className="text-[10px] font-bold text-slate-400 hover:text-brand-600 transition-colors">Mark all read</button>
+                  <button type="button" onClick={markAllAsRead} className="text-[10px] font-bold text-slate-400 hover:text-brand-600 transition-colors">{t("dash.shell.markAllRead")}</button>
                 )}
-                <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">{unreadNotifications.length} New</span>
+                <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">{t("dash.shell.newCount", { count: unreadNotifications.length })}</span>
               </div>
             </div>
             <div className="mt-2 max-h-96 overflow-y-auto custom-scrollbar">
@@ -111,18 +125,19 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-slate-300 mb-3">
                     <BellIcon />
                   </div>
-                  <p className="text-xs font-medium text-slate-500">All caught up!</p>
+                  <p className="text-xs font-medium text-slate-500">{t("dash.shell.allCaughtUp")}</p>
                 </div>
               ) : (
                 safeNotifications.map((notif) => (
                   <button
                     key={notif.id}
+                    type="button"
                     onClick={() => {
                       markAsRead(notif.id);
                       if (notif.linkTab) setActiveTab(notif.linkTab);
                       setIsNotificationsOpen(false);
                     }}
-                    className={`flex w-full items-start gap-3 rounded-xl px-4 py-3 text-left transition-colors hover:bg-slate-50 ${readIds.includes(notif.id) ? 'opacity-60' : ''}`}
+                    className={`flex w-full items-start gap-3 rounded-xl px-4 py-3 text-start transition-colors hover:bg-slate-50 ${readIds.includes(notif.id) ? 'opacity-60' : ''}`}
                   >
                     <div className={`mt-1 flex h-2 w-2 shrink-0 rounded-full ${readIds.includes(notif.id) ? 'bg-slate-300' : notif.type === 'alert' ? 'bg-rose-500' : 'bg-brand-500'}`} />
                     <div className="flex-1 overflow-hidden">
@@ -138,14 +153,14 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
       </div>
       
       <div className="flex items-center gap-2 sm:gap-3">
-                <div className="hidden text-right sm:block">
+                <div className="hidden text-end sm:block">
                   <p className="text-sm font-bold text-slate-900 leading-none">{user?.name}</p>
-                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none">{user?.role}</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 leading-none">{roleLabel}</p>
                 </div>
                 <img 
                   src={`https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(user?.name || "User")}`}
                   className="h-8 w-8 rounded-full border-2 border-white shadow-sm ring-1 ring-slate-100 sm:h-10 sm:w-10"
-                  alt="Avatar"
+                  alt={t("dash.shell.avatarAlt")}
                 />
               </div>
             </div>

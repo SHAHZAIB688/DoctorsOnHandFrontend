@@ -29,6 +29,14 @@ export const AuthProvider = ({ children }) => {
     return data.user;
   };
 
+  const authWithGoogle = async ({ idToken, role = "patient" }) => {
+    const { data } = await patient.post("/auth/google", { idToken, role });
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user;
+  };
+
   const register = async (payload) => {
     const isDoctor = payload.role === "doctor";
     let requestBody = payload;
@@ -63,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     return normalized;
   }, []);
 
-  const value = useMemo(() => ({ user, login, register, logout, refreshUser }), [user, refreshUser]);
+  const value = useMemo(() => ({ user, login, register, authWithGoogle, logout, refreshUser }), [user, refreshUser]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

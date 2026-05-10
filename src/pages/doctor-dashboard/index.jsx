@@ -1,7 +1,10 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import patient from "../../api/client";
+import i18n from "../../i18n/config";
+import { appointmentStatusLabel } from "../../utils/statusLabel";
 import DashboardShell from "../../components/DashboardShell";
 import VerificationModal from "../../components/VerificationModal";
 import PrescriptionForm from "../../components/PrescriptionForm";
@@ -32,11 +35,6 @@ const convertTo12Hour = (time24) => {
   return `${hour12}:${minutes} ${period}`;
 };
 
-const formatConsultationFee = (fee) => {
-  if (!fee || fee === 0) return "Free";
-  return `PKR ${fee}`;
-};
-
 const normalizeSingleAvailability = (slots = []) => {
   const matched = slots.find((slot) => WEEKDAY_OPTIONS.includes((slot?.day || "").trim().toLowerCase()));
   const matchedRange = slots.find(
@@ -55,7 +53,16 @@ const normalizeSingleAvailability = (slots = []) => {
 };
 
 const DoctorDashboard = () => {
+  const { t } = useTranslation();
   const { refreshUser } = useAuth();
+
+  const formatConsultationFee = useCallback(
+    (fee) => {
+      if (!fee || fee === 0) return t("common.free");
+      return `PKR ${fee}`;
+    },
+    [t]
+  );
   const [availability, setAvailability] = useState(normalizeSingleAvailability());
   const [appointments, setAppointments] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -90,7 +97,7 @@ const DoctorDashboard = () => {
       });
       setAvailability(normalizeSingleAvailability(data.availability || []));
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to load profile");
+      toast.error(error.response?.data?.message || i18n.t("dash.doctor.toast.loadProfileFail"));
     }
   };
 
@@ -104,11 +111,11 @@ const DoctorDashboard = () => {
       };
       
       await patient.put("/doctors/profile", payload);
-      toast.success("Profile updated successfully");
+      toast.success(t("dash.doctor.toast.profileUpdated"));
       setEditMode(false);
       await loadProfile();
     } catch (error) {
-      const errorMsg = error.response?.data?.message || error.message || "Failed to update profile";
+      const errorMsg = error.response?.data?.message || error.message || t("dash.doctor.toast.profileUpdateFail");
       toast.error(errorMsg);
       console.error("Profile update error:", error);
     }
@@ -119,7 +126,7 @@ const DoctorDashboard = () => {
       const { data } = await patient.get("/doctors/appointments");
       setAppointments(data);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to load bookings");
+      toast.error(error.response?.data?.message || i18n.t("dash.doctor.toast.loadBookingsFail"));
     }
   };
 
@@ -136,11 +143,11 @@ const DoctorDashboard = () => {
     e.preventDefault();
     try {
       await patient.put(`/reviews/${replyModal.reviewId}/respond`, { response: replyModal.response });
-      toast.success("Response sent!");
+      toast.success(t("dash.doctor.toast.responseSent"));
       setReplyModal({ isOpen: false, reviewId: null, response: "" });
       fetchReviews();
     } catch (error) {
-      toast.error("Failed to send response");
+      toast.error(t("dash.doctor.toast.responseFail"));
     }
   };
 
@@ -190,14 +197,17 @@ const DoctorDashboard = () => {
     return { totalRevenue: gross, yourEarnings: yourShare };
   }, [appointments, profile]);
 
-  const statCards = [
-    { label: "Total Revenue (completed)", value: `PKR ${revenueStats.totalRevenue}`, icon: FileIcon },
-    { label: "Your earnings (after 20% platform fee)", value: `PKR ${revenueStats.yourEarnings}`, icon: FileIcon },
-    { label: "Today Bookings", value: stats.today, icon: AppointmentIcon },
-    { label: "This Week Bookings", value: stats.week, icon: AppointmentIcon },
-    { label: "Cancelled", value: stats.cancelled, icon: AppointmentIcon },
-    { label: "Completed", value: stats.completed, icon: AppointmentIcon },
-  ];
+  const statCards = useMemo(
+    () => [
+      { label: t("dash.doctor.stats.totalRevenue"), value: `PKR ${revenueStats.totalRevenue}`, icon: FileIcon },
+      { label: t("dash.doctor.stats.yourEarnings"), value: `PKR ${revenueStats.yourEarnings}`, icon: FileIcon },
+      { label: t("dash.doctor.stats.todayBookings"), value: stats.today, icon: AppointmentIcon },
+      { label: t("dash.doctor.stats.weekBookings"), value: stats.week, icon: AppointmentIcon },
+      { label: t("dash.doctor.stats.cancelled"), value: stats.cancelled, icon: AppointmentIcon },
+      { label: t("dash.doctor.stats.completed"), value: stats.completed, icon: AppointmentIcon },
+    ],
+    [t, revenueStats.totalRevenue, revenueStats.yourEarnings, stats.today, stats.week, stats.cancelled, stats.completed]
+  );
 
   const videoReadyAppointments = useMemo(
     () => appointments.filter((a) => canUseVideo(a)).sort((x, y) => `${x.date} ${x.timeSlot}`.localeCompare(`${y.date} ${y.timeSlot}`)),
@@ -210,8 +220,8 @@ const DoctorDashboard = () => {
       if (a.status === "pending") {
         list.push({
           id: `new-${a._id}`,
-          title: "New Booking",
-          message: `${a.patient?.name} requested a service.`,
+          title: t("dash.doctor.notif.newBookingTitle"),
+          message: t("dash.doctor.notif.newBookingBody", { name: a.patient?.name || "—" }),
           type: "alert",
           linkTab: "appointments",
         });
@@ -221,28 +231,28 @@ const DoctorDashboard = () => {
       if (!r.doctorResponse) {
         list.push({
           id: `rev-${r._id}`,
-          title: "New Feedback",
-          message: `${r.patient?.name} left a ${r.rating}-star rating.`,
+          title: t("dash.doctor.notif.newFeedbackTitle"),
+          message: t("dash.doctor.notif.newFeedbackBody", { name: r.patient?.name || "—", rating: r.rating }),
           type: "info",
           linkTab: "reviews",
         });
       }
     });
     return list;
-  }, [appointments, reviews]);
+  }, [appointments, reviews, t]);
 
   const saveAvailability = async () => {
     try {
       await patient.put("/doctors/availability", { availability });
-      toast.success("Availability updated");
+      toast.success(t("dash.doctor.toast.availabilityUpdated"));
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update availability");
+      toast.error(error.response?.data?.message || t("dash.doctor.toast.availabilityFail"));
     }
   };
 
   const updateStatus = async (id, status) => {
     await patient.put(`/doctors/appointments/${id}/status`, { status });
-    toast.success("Booking updated");
+    toast.success(t("dash.doctor.toast.bookingUpdated"));
     fetchAppointments();
   };
 
@@ -253,7 +263,7 @@ const DoctorDashboard = () => {
       }
       setVideoCall({ open: true, roomId: appointment._id });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Could not open video call");
+      toast.error(error.response?.data?.message || t("dash.doctor.toast.videoFail"));
     }
   };
 
@@ -278,11 +288,12 @@ const DoctorDashboard = () => {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-slate-50 px-4">
         <div className="w-full max-w-xl rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-amber-900">Account temporarily suspended</h2>
-          <p className="mt-2 text-sm text-amber-800">Your doctor account is temporarily suspended. Please contact admin to restore access.</p>
+          <h2 className="text-xl font-bold text-amber-900">{t("dash.doctor.suspendedTitle")}</h2>
+          <p className="mt-2 text-sm text-amber-800">{t("dash.doctor.suspendedBody")}</p>
           {profile?.user?.suspendedUntil && (
             <p className="mt-3 text-xs text-amber-700">
-              Suspension ends: <span className="font-semibold">{new Date(profile.user.suspendedUntil).toLocaleString()}</span>
+              {t("dash.doctor.suspensionEnds")}{" "}
+              <span className="font-semibold">{new Date(profile.user.suspendedUntil).toLocaleString()}</span>
             </p>
           )}
         </div>
@@ -294,8 +305,8 @@ const DoctorDashboard = () => {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-slate-50 px-4">
         <div className="w-full max-w-xl rounded-2xl border border-rose-200 bg-rose-50 p-6 shadow-sm">
-          <h2 className="text-xl font-bold text-rose-900">Account blocked</h2>
-          <p className="mt-2 text-sm text-rose-800">Your doctor account has been blocked. Please contact admin.</p>
+          <h2 className="text-xl font-bold text-rose-900">{t("dash.doctor.blockedTitle")}</h2>
+          <p className="mt-2 text-sm text-rose-800">{t("dash.doctor.blockedBody")}</p>
         </div>
       </div>
     );
@@ -306,8 +317,8 @@ const DoctorDashboard = () => {
       <div className="flex min-h-[60vh] items-center justify-center">
         <VerificationModal isOpen={true} onAction={() => navigate("/")} />
         <div className="text-center">
-          <h2 className="text-xl font-bold text-slate-400">Access Restricted</h2>
-          <p className="mt-2 text-sm text-slate-400">Please wait for admin approval.</p>
+          <h2 className="text-xl font-bold text-slate-400">{t("dash.doctor.accessRestricted")}</h2>
+          <p className="mt-2 text-sm text-slate-400">{t("dash.doctor.waitApproval")}</p>
         </div>
       </div>
     );
@@ -316,19 +327,19 @@ const DoctorDashboard = () => {
   return (
     <>
       <DashboardShell
-        title="Doctor Dashboard"
-        subtitle="Manage bookings, profile, and verification status."
+        title={t("dash.doctor.title")}
+        subtitle={t("dash.doctor.subtitle")}
         notifications={notifications}
         navItems={[
-          { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
+          { id: "dashboard", label: t("dash.doctor.nav.dashboard"), icon: DashboardIcon },
           {
             id: "appointments",
-            label: "Bookings",
+            label: t("dash.doctor.nav.appointments"),
             icon: AppointmentIcon,
             hasNotification: appointments.some((a) => apptStatus(a) === "pending" || canUseVideo(a)),
           },
-          { id: "reviews", label: "Patient Reviews", icon: FileIcon },
-          { id: "profile", label: "Profile & account", icon: ProfileIcon },
+          { id: "reviews", label: t("dash.doctor.nav.reviews"), icon: FileIcon },
+          { id: "profile", label: t("dash.doctor.nav.profile"), icon: ProfileIcon },
         ]}
       >
         {(activeTab) => (
@@ -353,10 +364,8 @@ const DoctorDashboard = () => {
 
                 {videoReadyAppointments.length > 0 && (
                   <section className="rounded-2xl border border-indigo-100 bg-white p-5 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900">Video consultations</h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Start or rejoin a WebRTC call. Full list is under <span className="font-semibold text-slate-700">Bookings</span>.
-                    </p>
+                    <h3 className="text-lg font-bold text-slate-900">{t("dash.doctor.videoSectionTitle")}</h3>
+                    <p className="mt-1 text-sm text-slate-500">{t("dash.doctor.videoSectionHint")}</p>
                     <ul className="mt-4 space-y-3">
                       {videoReadyAppointments.map((a) => (
                         <li
@@ -364,9 +373,9 @@ const DoctorDashboard = () => {
                           className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                         >
                           <div>
-                            <p className="font-semibold text-slate-900">{a.patient?.name || "Patient"}</p>
+                            <p className="font-semibold text-slate-900">{a.patient?.name || t("dash.doctor.tablePatient")}</p>
                             <p className="text-xs text-slate-500">
-                              {a.date} {a.timeSlot} · <span className="capitalize">{apptStatus(a)}</span>
+                              {a.date} {a.timeSlot} · <span className="capitalize">{appointmentStatusLabel(apptStatus(a), t)}</span>
                             </p>
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -375,14 +384,14 @@ const DoctorDashboard = () => {
                               className="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500"
                               onClick={() => handleVideoCall(a)}
                             >
-                              {apptStatus(a) === "in-progress" ? "Rejoin video" : "Video call"}
+                              {apptStatus(a) === "in-progress" ? t("dash.doctor.rejoinVideo") : t("dash.doctor.videoCall")}
                             </button>
                             <button
                               type="button"
                               className={`rounded-lg px-3 py-1.5 text-xs font-semibold text-white ${apptStatus(a) === "in-progress" ? "bg-rose-600 hover:bg-rose-500" : "bg-brand-600 hover:bg-brand-500"}`}
                               onClick={() => updateStatus(a._id, "awaiting-payment")}
                             >
-                              {apptStatus(a) === "in-progress" ? "End call" : "Complete"}
+                              {apptStatus(a) === "in-progress" ? t("dash.doctor.endCall") : t("dash.doctor.complete")}
                             </button>
                           </div>
                         </li>
@@ -393,13 +402,13 @@ const DoctorDashboard = () => {
 
                 <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-bold text-slate-900">Manage Availability</h3>
-                    <div className="text-xs text-slate-500">Set your working hours</div>
+                    <h3 className="text-lg font-bold text-slate-900">{t("dash.doctor.availabilityTitle")}</h3>
+                    <div className="text-xs text-slate-500">{t("dash.doctor.availabilityHint")}</div>
                   </div>
 
                   <div className="space-y-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">Working Days</label>
+                      <label className="text-sm font-medium text-slate-700">{t("dash.doctor.workingDays")}</label>
                       <div className="flex flex-wrap items-center gap-3">
                         <select
                           value={availability[0]?.startDay || "monday"}
@@ -408,12 +417,12 @@ const DoctorDashboard = () => {
                         >
                           {WEEKDAY_OPTIONS.map((d) => (
                             <option key={d} value={d}>
-                              {d.charAt(0).toUpperCase() + d.slice(1)}
+                              {t(`dash.doctor.weekdays.${d}`)}
                             </option>
                           ))}
                         </select>
 
-                        <span className="text-slate-400 font-medium">to</span>
+                        <span className="text-slate-400 font-medium">{t("dash.doctor.to")}</span>
 
                         <select
                           value={availability[0]?.endDay || "friday"}
@@ -422,7 +431,7 @@ const DoctorDashboard = () => {
                         >
                           {WEEKDAY_OPTIONS.map((d) => (
                             <option key={d} value={d}>
-                              {d.charAt(0).toUpperCase() + d.slice(1)}
+                              {t(`dash.doctor.weekdays.${d}`)}
                             </option>
                           ))}
                         </select>
@@ -430,7 +439,7 @@ const DoctorDashboard = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">Working Hours</label>
+                      <label className="text-sm font-medium text-slate-700">{t("dash.doctor.workingHours")}</label>
                       <div className="flex flex-wrap items-center gap-3">
                         <div className="flex items-center gap-2">
                           <input
@@ -439,7 +448,7 @@ const DoctorDashboard = () => {
                             className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-500/20 transition-all"
                             onChange={(e) => setAvailability((p) => [{ ...(p[0] || { day: "monday" }), start: e.target.value }])}
                           />
-                          <span className="text-slate-400 font-medium">to</span>
+                          <span className="text-slate-400 font-medium">{t("dash.doctor.to")}</span>
                           <input
                             type="time"
                             value={availability[0]?.end || DEFAULT_SLOT.end}
@@ -451,11 +460,11 @@ const DoctorDashboard = () => {
                     </div>
 
                     <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                      <div className="text-sm font-medium text-slate-700 mb-2">Current Schedule</div>
+                      <div className="text-sm font-medium text-slate-700 mb-2">{t("dash.doctor.currentSchedule")}</div>
                       <div className="text-sm text-slate-600">
-                        {availability[0]?.startDay?.charAt(0).toUpperCase() + availability[0]?.startDay?.slice(1)} to{" "}
-                        {availability[0]?.endDay?.charAt(0).toUpperCase() + availability[0]?.endDay?.slice(1)},{" "}
-                        {convertTo12Hour(availability[0]?.start)} - {convertTo12Hour(availability[0]?.end)}
+                        {t(`dash.doctor.weekdays.${availability[0]?.startDay || "monday"}`)} {t("dash.doctor.to")}{" "}
+                        {t(`dash.doctor.weekdays.${availability[0]?.endDay || "friday"}`)}, {convertTo12Hour(availability[0]?.start)} -{" "}
+                        {convertTo12Hour(availability[0]?.end)}
                       </div>
                     </div>
                   </div>
@@ -465,7 +474,7 @@ const DoctorDashboard = () => {
                     className="mt-6 w-full rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-3 text-sm font-bold text-white hover:from-brand-700 hover:to-brand-600 transition-all shadow-lg shadow-brand-100 active:scale-95"
                     onClick={saveAvailability}
                   >
-                    Save Availability Settings
+                    {t("dash.doctor.saveAvailability")}
                   </button>
                 </section>
               </div>
@@ -473,18 +482,18 @@ const DoctorDashboard = () => {
 
             {activeTab === "appointments" && (
               <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Bookings</h3>
+                <h3 className="text-lg font-semibold text-slate-900">{t("dash.doctor.bookingsTitle")}</h3>
                 {appointments.length === 0 ? (
-                  <p className="mt-4 text-sm text-slate-500">No bookings assigned.</p>
+                  <p className="mt-4 text-sm text-slate-500">{t("dash.doctor.noBookings")}</p>
                 ) : (
                   <div className="mt-4 overflow-x-auto">
-                    <table className="min-w-full text-left text-sm">
+                    <table className="min-w-full text-start text-sm">
                       <thead className="bg-slate-100 text-slate-700">
                         <tr>
-                          <th className="px-4 py-3">Patient</th>
-                          <th className="px-4 py-3">Date/Time</th>
-                          <th className="px-4 py-3">Status</th>
-                          <th className="px-4 py-3">Actions</th>
+                          <th className="px-4 py-3">{t("dash.doctor.tablePatient")}</th>
+                          <th className="px-4 py-3">{t("dash.doctor.tableDateTime")}</th>
+                          <th className="px-4 py-3">{t("dash.doctor.tableStatus")}</th>
+                          <th className="px-4 py-3">{t("dash.doctor.tableActions")}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -495,17 +504,19 @@ const DoctorDashboard = () => {
                               {a.date} {a.timeSlot}
                             </td>
                             <td className="px-4 py-3">
-                              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(a.status)}`}>{a.status}</span>
+                              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(a.status)}`}>
+                                {appointmentStatusLabel(a.status, t)}
+                              </span>
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex flex-wrap gap-2">
                                 {apptStatus(a) === "pending" && (
                                   <>
                                     <button className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => updateStatus(a._id, "accepted")}>
-                                      Accept
+                                      {t("dash.doctor.accept")}
                                     </button>
                                     <button className="rounded bg-amber-500 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => updateStatus(a._id, "rejected")}>
-                                      Reject
+                                      {t("dash.doctor.reject")}
                                     </button>
                                   </>
                                 )}
@@ -516,27 +527,27 @@ const DoctorDashboard = () => {
                                       type="button"
                                       onClick={() => handleVideoCall(a)}
                                     >
-                                      {apptStatus(a) === "in-progress" ? "Rejoin video" : "Video call"}
+                                      {apptStatus(a) === "in-progress" ? t("dash.doctor.rejoinVideo") : t("dash.doctor.videoCall")}
                                     </button>
                                     <button
                                       className={`rounded px-2 py-1 text-xs font-semibold text-white ${apptStatus(a) === "in-progress" ? "bg-rose-600" : "bg-brand-600"}`}
                                       type="button"
                                       onClick={() => updateStatus(a._id, "awaiting-payment")}
                                     >
-                                      {apptStatus(a) === "in-progress" ? "End Call" : "Complete"}
+                                      {apptStatus(a) === "in-progress" ? t("dash.doctor.endCall") : t("dash.doctor.complete")}
                                     </button>
                                     <button className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => setPrescriptionModal({ isOpen: true, appointment: a })}>
-                                      Prescription
+                                      {t("dash.doctor.prescription")}
                                     </button>
                                   </>
                                 )}
                                 {apptStatus(a) === "completed" && (
                                   <>
                                     <button className="cursor-default rounded bg-emerald-100 border border-emerald-300 px-2 py-1 text-xs font-semibold text-emerald-700" type="button">
-                                      ✓ Payment Received
+                                      ✓ {t("dash.doctor.paymentReceived")}
                                     </button>
                                     <button className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" type="button" onClick={() => setPrescriptionModal({ isOpen: true, appointment: a })}>
-                                      Prescription
+                                      {t("dash.doctor.prescription")}
                                     </button>
                                   </>
                                 )}
@@ -557,18 +568,18 @@ const DoctorDashboard = () => {
                   refreshUser={refreshUser}
                   onSaved={loadProfile}
                   idPrefix="doctor-acct"
-                  title="Account"
-                  description="Update your sign-in name, email, phone, and password. Public listing fields are edited below."
+                  title={t("dash.doctor.accountSectionTitle")}
+                  description={t("dash.doctor.accountSectionDesc")}
                 />
               <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between mb-6">
                   <div>
-                    <h3 className="text-xl font-bold text-slate-900">Doctor listing</h3>
-                    <p className="mt-1 text-sm text-slate-500">Service rate, experience, and bio shown to patients.</p>
+                    <h3 className="text-xl font-bold text-slate-900">{t("dash.doctor.listingTitle")}</h3>
+                    <p className="mt-1 text-sm text-slate-500">{t("dash.doctor.listingSubtitle")}</p>
                   </div>
                   {!editMode ? (
                     <button onClick={() => setEditMode(true)} className="rounded-lg bg-indigo-50 text-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-100 transition-colors shrink-0">
-                      Edit listing
+                      {t("dash.doctor.editListing")}
                     </button>
                   ) : (
                     <div className="flex gap-2 shrink-0">
@@ -584,10 +595,10 @@ const DoctorDashboard = () => {
                         }}
                         className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
                       >
-                        Cancel
+                        {t("dash.doctor.cancel")}
                       </button>
                       <button onClick={saveProfile} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 transition-colors">
-                        Save listing
+                        {t("dash.doctor.saveListing")}
                       </button>
                     </div>
                   )}
@@ -596,22 +607,24 @@ const DoctorDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Verification</h4>
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t("dash.doctor.verification")}</h4>
                       <div className="rounded-xl border border-slate-200 p-4 bg-slate-50">
                         {!editMode ? (
                           <>
                             <p className="text-sm">
-                              <span className="font-semibold text-slate-700">Specialization:</span> {profile?.specialization}
+                              <span className="font-semibold text-slate-700">{t("dash.doctor.specialization")}:</span> {profile?.specialization}
                             </p>
                             <div className="flex items-center mt-2">
-                              <span className="font-semibold text-slate-700 text-sm mr-2">Account status:</span>
-                              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(profile?.status)}`}>{profile?.status}</span>
+                              <span className="font-semibold text-slate-700 text-sm me-2">{t("dash.doctor.accountStatus")}:</span>
+                              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(profile?.status)}`}>
+                                {appointmentStatusLabel(profile?.status, t)}
+                              </span>
                             </div>
                           </>
                         ) : (
                           <>
                             <div className="mb-3">
-                              <label className="block text-xs font-semibold text-slate-700 mb-1">Specialization</label>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">{t("dash.doctor.specialization")}</label>
                               <select
                                 value={editForm.specialization || "General Physician"}
                                 onChange={(e) => setEditForm({ ...editForm, specialization: e.target.value })}
@@ -625,8 +638,10 @@ const DoctorDashboard = () => {
                               </select>
                             </div>
                             <div className="flex items-center mt-2">
-                              <span className="font-semibold text-slate-700 text-sm mr-2">Account status:</span>
-                              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(profile?.status)}`}>{profile?.status}</span>
+                              <span className="font-semibold text-slate-700 text-sm me-2">{t("dash.doctor.accountStatus")}:</span>
+                              <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${statusBadge(profile?.status)}`}>
+                                {appointmentStatusLabel(profile?.status, t)}
+                              </span>
                             </div>
                           </>
                         )}
@@ -634,21 +649,22 @@ const DoctorDashboard = () => {
                     </div>
 
                     <div>
-                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Service Details</h4>
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t("dash.doctor.serviceDetails")}</h4>
                       <div className="rounded-xl border border-slate-200 p-4">
                         {!editMode ? (
                           <>
                             <p className="text-sm">
-                              <span className="font-semibold text-slate-700">Experience:</span> {profile?.experienceYears} years
+                              <span className="font-semibold text-slate-700">{t("dash.doctor.experienceLabel")}:</span> {profile?.experienceYears}{" "}
+                              {t("dash.doctor.yearsUnit")}
                             </p>
                             <p className="text-sm mt-2">
-                              <span className="font-semibold text-slate-700">Service Rate:</span> {formatConsultationFee(profile?.consultationFee)}
+                              <span className="font-semibold text-slate-700">{t("dash.doctor.serviceRateLabel")}:</span> {formatConsultationFee(profile?.consultationFee)}
                             </p>
                           </>
                         ) : (
                           <div className="space-y-3">
                             <div>
-                              <label className="block text-xs font-semibold text-slate-700 mb-1">Experience (Years)</label>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">{t("dash.doctor.experienceYears")}</label>
                               <input
                                 type="number"
                                 className="w-full rounded-lg border border-slate-300 p-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
@@ -657,7 +673,7 @@ const DoctorDashboard = () => {
                               />
                             </div>
                             <div>
-                              <label className="block text-xs font-semibold text-slate-700 mb-1">Service Rate (PKR)</label>
+                              <label className="block text-xs font-semibold text-slate-700 mb-1">{t("dash.doctor.serviceRate")}</label>
                               <input
                                 type="number"
                                 className="w-full rounded-lg border border-slate-300 p-2 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
@@ -672,14 +688,14 @@ const DoctorDashboard = () => {
                   </div>
 
                   <div>
-                    <h4 className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">Bio</h4>
+                    <h4 className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400">{t("dash.doctor.bioTitle")}</h4>
                     <div className="h-[calc(100%-1.5rem)] rounded-xl border border-slate-200 p-4">
                       {!editMode ? (
-                        <p className="whitespace-pre-wrap text-sm text-slate-600">{profile?.bio || "No bio added yet."}</p>
+                        <p className="whitespace-pre-wrap text-sm text-slate-600">{profile?.bio || t("dash.doctor.noBio")}</p>
                       ) : (
                         <textarea
                           className="h-full min-h-[150px] w-full resize-none rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
-                          placeholder="Describe your services and experience for patients..."
+                          placeholder={t("dash.doctor.bioPlaceholder")}
                           value={editForm.bio}
                           onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
                         />
@@ -694,16 +710,16 @@ const DoctorDashboard = () => {
             {activeTab === "reviews" && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm border border-slate-200">
-                  <h3 className="text-lg font-bold text-slate-900">Patient Feedback</h3>
+                  <h3 className="text-lg font-bold text-slate-900">{t("dash.doctor.reviewsTitle")}</h3>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold text-amber-500">★ {profile?.averageRating?.toFixed(1) || "5.0"}</span>
-                    <span className="text-sm text-slate-500">({profile?.numReviews || 0} total reviews)</span>
+                    <span className="text-sm text-slate-500">({t("dash.doctor.reviewsCountOnly", { count: profile?.numReviews || 0 })})</span>
                   </div>
                 </div>
 
                 <div className="grid gap-4">
                   {reviews.length === 0 ? (
-                    <div className="rounded-2xl bg-white p-12 text-center text-sm text-slate-500 shadow-sm border border-slate-200">No reviews received yet.</div>
+                    <div className="rounded-2xl bg-white p-12 text-center text-sm text-slate-500 shadow-sm border border-slate-200">{t("dash.doctor.noReviews")}</div>
                   ) : (
                     reviews.map((rev) => (
                       <article key={rev._id} className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200">
@@ -724,16 +740,18 @@ const DoctorDashboard = () => {
                           <span className="text-[10px] text-slate-400 font-medium">{new Date(rev.createdAt).toLocaleDateString()}</span>
                         </div>
 
-                        <p className="text-sm text-slate-600 italic bg-slate-50 p-3 rounded-xl">"{rev.patientComment || "No comment provided."}"</p>
+                        <p className="text-sm text-slate-600 italic bg-slate-50 p-3 rounded-xl">
+                          &quot;{rev.patientComment || t("dash.doctor.noComment")}&quot;
+                        </p>
 
                         {rev.doctorResponse ? (
-                          <div className="mt-4 ml-6 border-l-2 border-brand-200 pl-4 py-1">
-                            <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest mb-1">Your Response</p>
+                          <div className="mt-4 ms-6 border-s-2 border-brand-200 ps-4 py-1">
+                            <p className="text-[10px] font-bold text-brand-600 uppercase tracking-widest mb-1">{t("dash.doctor.yourResponse")}</p>
                             <p className="text-sm text-slate-700">{rev.doctorResponse}</p>
                           </div>
                         ) : (
                           <button onClick={() => setReplyModal({ isOpen: true, reviewId: rev._id, response: "" })} className="mt-4 text-xs font-bold text-brand-600 hover:text-brand-700 transition-colors">
-                            + Write a response
+                            {t("dash.doctor.writeResponse")}
                           </button>
                         )}
                       </article>

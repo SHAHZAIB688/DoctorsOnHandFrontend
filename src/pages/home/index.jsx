@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import patient from "../../api/client";
 import WhyChooseUsSection from "../../components/WhyChooseUsSection";
@@ -11,17 +12,52 @@ import FeaturedDoctorsSection from "./components/FeaturedDoctorsSection";
 import TestimonialsSection from "./components/TestimonialsSection";
 import FaqSection from "./components/FaqSection";
 import CtaSection from "./components/CtaSection";
-import { HERO_IMAGES, TOP_SPECIALITIES, HOW_IT_WORKS_STEPS, FAQ_ITEMS, TESTIMONIALS } from "./components/HomeConstants";
-
-const formatConsultationFee = (fee) => (!fee || fee === 0 ? "Free" : `PKR ${fee}`);
+import { HERO_IMAGES, TOP_SPECIALITIES, TESTIMONIALS } from "./components/HomeConstants";
 
 const HomePage = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
   const [doctors, setDoctors] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  const formatConsultationFee = (fee) => (!fee || fee === 0 ? t("common.free") : `PKR ${fee}`);
+
+  const howSteps = useMemo(() => {
+    const v = t("home.howSteps", { returnObjects: true });
+    return Array.isArray(v) ? v : [];
+  }, [t, i18n.language]);
+  const faqItems = useMemo(() => {
+    const v = t("home.faqItems", { returnObjects: true });
+    return Array.isArray(v) ? v : [];
+  }, [t, i18n.language]);
+  const testimonialTexts = useMemo(() => {
+    const v = t("home.testimonials", { returnObjects: true });
+    return Array.isArray(v) ? v : [];
+  }, [t, i18n.language]);
+
+  const testimonials = useMemo(
+    () =>
+      Array.isArray(testimonialTexts)
+        ? testimonialTexts.map((item, i) => ({
+            ...item,
+            image: TESTIMONIALS[i]?.image,
+            rating: TESTIMONIALS[i]?.rating ?? 5,
+          }))
+        : [],
+    [testimonialTexts]
+  );
+
+  const topSpecialityItems = useMemo(() => {
+    const labels = t("home.topSpecs", { returnObjects: true });
+    if (!Array.isArray(labels)) return TOP_SPECIALITIES.map((queryValue) => ({ queryValue, label: queryValue }));
+    return TOP_SPECIALITIES.map((queryValue, i) => ({
+      queryValue,
+      label: labels[i] || queryValue,
+    }));
+  }, [t, i18n.language]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -35,18 +71,17 @@ const HomePage = () => {
       try {
         const { data } = await patient.get("/doctors");
         setDoctors(Array.isArray(data) ? data : []);
-      } catch (error) {
-        toast.error("Unable to load featured doctors");
+      } catch {
+        toast.error(t("home.loadDoctorsError"));
       } finally {
         setLoadingDoctors(false);
       }
     };
-    
+
     fetchDoctors();
-    // Refresh doctors list every 30 seconds to reflect specialization changes
     const intervalId = setInterval(fetchDoctors, 30000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [t]);
 
   const featuredDoctors = useMemo(() => doctors.slice(0, 3), [doctors]);
 
@@ -60,16 +95,16 @@ const HomePage = () => {
     <div className="space-y-16 pb-8">
       <HeroSection heroImages={HERO_IMAGES} currentImage={currentImage} />
       <SearchBarSection searchQuery={searchQuery} setSearchQuery={setSearchQuery} onSubmit={submitSearch} />
-      <TopSpecialitiesSection specialities={TOP_SPECIALITIES} />
+      <TopSpecialitiesSection specialities={topSpecialityItems} />
       <WhyChooseUsSection />
-      <HowItWorksSection steps={HOW_IT_WORKS_STEPS} />
+      <HowItWorksSection steps={howSteps} />
       <FeaturedDoctorsSection
         loadingDoctors={loadingDoctors}
         featuredDoctors={featuredDoctors}
         formatConsultationFee={formatConsultationFee}
       />
-      <TestimonialsSection testimonials={TESTIMONIALS} />
-      <FaqSection items={FAQ_ITEMS} openIndex={openFaqIndex} setOpenIndex={setOpenFaqIndex} />
+      <TestimonialsSection testimonials={testimonials} />
+      <FaqSection items={faqItems} openIndex={openFaqIndex} setOpenIndex={setOpenFaqIndex} />
       <CtaSection />
     </div>
   );

@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,6 +10,10 @@
 
   body {
     @apply m-0 bg-slate-50 text-slate-800 antialiased;
+  }
+
+  html[lang="ur"] body {
+    font-family: "Noto Nastaliq Urdu", ui-sans-serif, system-ui, sans-serif;
   }
 
   input, select, textarea {

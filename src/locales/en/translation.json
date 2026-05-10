@@ -1,0 +1,325 @@
+{
+  "lang": {
+    "en": "EN",
+    "ur": "اردو",
+    "switchLabel": "Language"
+  },
+  "common": {
+    "free": "Free",
+    "patient": "Patient",
+    "processing": "Processing...",
+    "searching": "Searching..."
+  },
+  "nav": {
+    "home": "Home",
+    "findDoctors": "Find Doctors",
+    "about": "About",
+    "contact": "Contact",
+    "dashboard": "Dashboard",
+    "login": "Login",
+    "joinNow": "Join Now"
+  },
+  "header": {
+    "logoAlt": "Perscripto Logo",
+    "account": "Account",
+    "userAccount": "User Account",
+    "logout": "Logout"
+  },
+  "footer": {
+    "tagline": "Modern doctor booking platform for secure, fast, and reliable service management. Making skilled help accessible for everyone.",
+    "platform": "Platform",
+    "company": "Company",
+    "contactUs": "Contact Us",
+    "bookService": "Book Service",
+    "aboutUs": "About Us",
+    "termsOfService": "Terms of Service",
+    "contactSupport": "Contact Support",
+    "rights": "© 2026 Perscripto. All rights reserved.",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "cookies": "Cookies",
+    "socialFacebook": "Facebook",
+    "socialLinkedIn": "LinkedIn",
+    "socialX": "X"
+  },
+  "home": {
+    "heroBadge": "Trusted Healthcare Network",
+    "heroTitle": "Book Trusted Doctors in Minutes",
+    "heroSubtitle": "Find experienced doctors, book appointments in seconds, and stay updated with secure reminders and notifications.",
+    "findDoctors": "Find Doctors",
+    "bookAppointment": "Book Appointment",
+    "heroImgAlt": "Doctor consultation",
+    "searchPlaceholder": "Search doctors by name or service type...",
+    "searchDoctors": "Search Doctors",
+    "topSpecsTitle": "Top Specialities",
+    "topSpecsSubtitle": "Explore common medical specialities quickly.",
+    "whyTitle": "Why Patients Choose Perscripto",
+    "whySubtitle": "Trusted platform for fast and secure doctor bookings.",
+    "whyHighlight": "Highlighted Benefit",
+    "whyClickHint": "Click to highlight",
+    "howTitle": "How It Works",
+    "howSubtitle": "Get consultation-ready in four simple steps.",
+    "stepLabel": "Step {{n}}",
+    "featuredTitle": "Featured Doctors",
+    "featuredSubtitle": "Meet our most trusted professionals.",
+    "experience": "Experience",
+    "years": "{{n}} years",
+    "rating": "Rating",
+    "startingRate": "Starting Rate",
+    "viewDetails": "View Details",
+    "testimonialsTitle": "What Our Patients Say",
+    "testimonialsSubtitle": "Real stories from people who have experienced a better way to hire skilled doctors with Perscripto.",
+    "faqTitle": "FAQ",
+    "faqSubtitle": "Answers to common patient questions.",
+    "ctaTitle": "Ready to Book Your Next Service?",
+    "ctaSubtitle": "Join Perscripto and connect with trusted doctors in minutes.",
+    "browseDoctors": "Browse Doctors",
+    "createAccount": "Create Account",
+    "loadDoctorsError": "Unable to load featured doctors",
+    "howSteps": [
+      {
+        "title": "Search Doctors",
+        "text": "Browse qualified doctors by specialization, ratings, and availability."
+      },
+      {
+        "title": "Review Profile",
+        "text": "Check experience, consultation fee, and patient feedback before booking."
+      },
+      {
+        "title": "Book Appointment",
+        "text": "Choose your date and preferred time slot in seconds."
+      },
+      {
+        "title": "Get Consultation",
+        "text": "Track progress and stay updated until treatment is completed."
+      }
+    ],
+    "faqItems": [
+      {
+        "q": "How do I book a doctor?",
+        "a": "Go to Doctors, open a doctor detail page, choose date/time slot, and confirm booking."
+      },
+      {
+        "q": "Are doctors verified on Perscripto?",
+        "a": "Yes, listed doctors are verified before they become available for patient bookings."
+      },
+      {
+        "q": "Can I pay online for appointments?",
+        "a": "Yes, Stripe checkout is integrated for secure online appointment payments."
+      },
+      {
+        "q": "Can I update my profile details anytime?",
+        "a": "Yes, the dashboard includes profile sections where you can edit your details anytime."
+      }
+    ],
+    "testimonials": [
+      {
+        "name": "Ali Raza",
+        "role": "Patient",
+        "content": "Perscripto made booking doctor appointments very easy. Doctors are punctual and consultations are professional."
+      },
+      {
+        "name": "Fatima Ahmed",
+        "role": "Patient",
+        "content": "I loved the WhatsApp notifications. I get reminders for every appointment booking, which is very helpful."
+      },
+      {
+        "name": "Usman Khan",
+        "role": "Patient",
+        "content": "The interface is simple and user-friendly. I can easily book doctors for my medical consultations."
+      },
+      {
+        "name": "Ayesha Malik",
+        "role": "Patient",
+        "content": "Seeing the security features gave me confidence that my personal information is safe."
+      },
+      {
+        "name": "Hassan Ali",
+        "role": "Patient",
+        "content": "The online booking system is very fast and there is a wide selection of doctors."
+      }
+    ],
+    "topSpecs": [
+      "General Physician",
+      "Cardiologist",
+      "Dermatologist",
+      "Pediatrician",
+      "Neurologist",
+      "Orthopedic Surgeon"
+    ]
+  },
+  "why": {
+    "features": {
+      "verified": {
+        "title": "Verified Doctors",
+        "description": "All listed doctors are verified so patients can book with confidence."
+      },
+      "booking": {
+        "title": "Easy Service Booking",
+        "description": "Book services in a few clicks with a smooth and simple flow."
+      },
+      "support": {
+        "title": "24/7 Support",
+        "description": "Get help anytime for booking, account, and service issues."
+      },
+      "secure": {
+        "title": "Secure Job Records",
+        "description": "User data and service records are protected with secure handling."
+      },
+      "coordination": {
+        "title": "Online Coordination",
+        "description": "Coordinate jobs remotely and manage service updates from your home."
+      },
+      "affordable": {
+        "title": "Affordable Rates",
+        "description": "Transparent and reasonable service rates for quality work."
+      }
+    }
+  },
+  "auth": {
+    "careFirst": "Care First, On Time",
+    "startJourneyLine1": "Start your",
+    "startJourneyLine2": "journey",
+    "brandSubtitle": "Join thousands of doctors and patients who trust Perscripto for reliable appointment bookings.",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your Password",
+    "choosePassword": "Choose Password",
+    "signInBtn": "Sign In",
+    "registerBtn": "Register",
+    "notMember": "Not a member?",
+    "alreadyMember": "Already a member?",
+    "joinPatient": "Join as Patient",
+    "joinDoctor": "Join as Doctor",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "selectRole": "Select Role",
+    "selectSpecialization": "Select medical specialization",
+    "yearsExperience": "Years of Experience",
+    "photoHeadshot": "Professional Photo (Headshot)",
+    "certification": "Certification (PDF/Image)",
+    "termsAgree": "Agreed to",
+    "termsLink": "Terms and Conditions",
+    "orContinueWith": "Or continue with",
+    "continueGoogle": "Continue with Google",
+    "connecting": "Connecting…",
+    "googlePatientOnly": "Google sign-up is for patients only. Please complete the doctor registration above.",
+    "welcomeBack": "Welcome back to Perscripto",
+    "welcome": "Welcome to Perscripto",
+    "authFailed": "Authentication failed",
+    "registrationFailed": "Registration failed",
+    "termsRequired": "Please agree to the Terms and Conditions",
+    "googleOnlyPatients": "Google sign-up is only available for patients. Doctors must register with documents.",
+    "googleFailed": "Google sign-up failed",
+    "titlePatientGoogle": "Switch to Patient to sign up with Google",
+    "titleAcceptTerms": "Accept the terms above, then click to continue",
+    "imageSizeError": "Image must be at least 400x400 pixels",
+    "imageRatioError": "Please upload a square or portrait image (Aspect Ratio 1:1 or 4:5)",
+    "verificationTitle": "Account Under Verification",
+    "verificationBody": "Thank you for joining Perscripto! Your professional credentials have been submitted for review.",
+    "verificationWait": "Please wait for admin approval (usually 24-48 hours) before you can access your doctor dashboard.",
+    "goToLogin": "Go to Login"
+  },
+  "about": {
+    "heroTitle": "About Perscripto",
+    "heroLead": "Perscripto is an innovative online healthcare platform designed to simplify how people find trusted doctors. We bridge the gap between patients and medical professionals with technology.",
+    "journeyTitle": "Our Journey",
+    "journeyP1": "In today’s fast-paced world, finding the right doctor and booking a consultation can often be time-consuming and stressful. Perscripto aims to eliminate these challenges by providing a seamless, reliable, and user-friendly solution for patients and doctors.",
+    "journeyP2": "Our platform allows patients to easily search for qualified doctors, explore specializations, view availability, and book appointments in just a few clicks. Whether it is a routine check-up or specialist consultation, Perscripto keeps quality healthcare within your reach.",
+    "journeyP3": "We are committed to maintaining high standards of quality and trust. Every doctor on our platform goes through a verification process to ensure patients receive reliable care from experienced and certified professionals.",
+    "offerTitle": "What We Offer",
+    "visionTitle": "Our Vision",
+    "visionText": "Our vision is to become a trusted digital healthcare partner by making qualified doctors accessible to everyone, anytime and anywhere.",
+    "missionTitle": "Our Mission",
+    "missionText": "Our mission is to improve patient experience by providing a smart, reliable, and efficient appointment system that connects people with the right doctors without delay.",
+    "ctaTitle": "Ready to book your first appointment?",
+    "findDoctor": "Find a Doctor",
+    "joinNow": "Join Now",
+    "offers": [
+      "Easy and quick online doctor booking",
+      "Access to verified and experienced doctors",
+      "Multiple service categories in one platform",
+      "Secure and user-friendly interface",
+      "Time-saving and hassle-free experience"
+    ]
+  },
+  "contact": {
+    "badge": "Get In Touch",
+    "title": "Contact Us",
+    "lead": "Have questions about Perscripto? Our team is here to help with appointments and account support.",
+    "helpTitle": "How can we help?",
+    "helpText": "Whether you are a patient looking for a trusted doctor or a professional interested in joining our platform, we are ready to assist you.",
+    "mapTitle": "Perscripto Location",
+    "formTitle": "Send us a Message",
+    "fullName": "Full Name",
+    "email": "Email Address",
+    "subject": "Subject",
+    "message": "Your Message",
+    "namePh": "John Doe",
+    "emailPh": "john@example.com",
+    "subjectPh": "How can we help you?",
+    "messagePh": "Write your message here...",
+    "send": "Send Message",
+    "sending": "Sending Message...",
+    "whatsappToast": "Redirecting to WhatsApp for notification...",
+    "cardEmail": "Email Us",
+    "cardPhone": "Call Us",
+    "cardVisit": "Visit Us",
+    "cardHours": "Office Hours",
+    "hoursValue": "Mon - Fri, 9am - 6pm"
+  },
+  "doctors": {
+    "pageTitle": "Find the Right Doctor",
+    "pageSubtitle": "Search through our verified network of skilled professionals.",
+    "searchPlaceholder": "Search by name, skill, or service...",
+    "experiencePh": "Experience",
+    "availabilityPh": "Availability",
+    "reset": "Reset",
+    "searchBtn": "Search",
+    "fetching": "Fetching verified doctors...",
+    "loadError": "Unable to load doctors",
+    "emptyTitle": "No doctors match your criteria",
+    "emptyText": "We could not find any doctors matching your search. Try changing the category or clearing your search.",
+    "exp": {
+      "all": "All",
+      "range05": "0–5 years",
+      "range610": "6–10 years",
+      "range10": "10+ years"
+    },
+    "avail": {
+      "all": "All",
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday",
+      "today": "Available Today",
+      "week": "Available This Week",
+      "weekend": "Weekend Only"
+    },
+    "card": {
+      "verified": "Verified Professional",
+      "experience": "Experience",
+      "yearsPlus": "{{n}}+ Years",
+      "availability": "Availability",
+      "weekdays": "Mon - Fri",
+      "viewDetails": "View Details"
+    }
+  },
+  "terms": {
+    "badge": "Legal Documentation",
+    "title": "Terms and Conditions",
+    "subtitle": "Please read these terms carefully before using our platform. By accessing Perscripto, you agree to be bound by these legal guidelines.",
+    "sidebarNote": "Detailed clauses below are provided in English for legal accuracy.",
+    "quickNav": "Quick Navigation",
+    "needHelp": "Need help?",
+    "support247": "Our support team is here for you 24/7.",
+    "contactSupportLink": "Contact Support",
+    "acceptanceTitle": "Acceptance of Terms",
+    "acceptanceBody": "By continuing to use Perscripto, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.",
+    "lastUpdated": "Last Updated: April 26, 2026"
+  }
+}

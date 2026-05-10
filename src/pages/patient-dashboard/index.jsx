@@ -1,7 +1,9 @@
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import patient from "../../api/client";
+import i18n from "../../i18n/config";
 import DashboardShell from "../../components/DashboardShell";
 import { DashboardIcon, DoctorIcon, AppointmentIcon, FileIcon, PaymentIcon, SettingsIcon } from "../../components/icons";
 import Loader from "../../components/Loader";
@@ -15,13 +17,6 @@ import PatientHistorySection from "./components/PatientHistorySection";
 import PatientPaymentHistorySection from "./components/PatientPaymentHistorySection";
 import PatientSettingsSection from "./components/PatientSettingsSection";
 import VideoCall from "../../components/VideoCall";
-
-const formatServiceFee = (fee) => {
-  if (!fee || fee === 0) return "Free";
-  return `PKR ${fee}`;
-};
-
-const doctorLabel = (appointment) => appointment?.doctor?.name || "Your doctor";
 
 const normalizeTimeSlot = (timeSlot) => {
   if (!timeSlot) return "";
@@ -38,6 +33,18 @@ const DEFAULT_HEALTH_SUMMARY = {
 };
 
 const PatientDashboard = () => {
+  const { t } = useTranslation();
+
+  const formatServiceFee = useCallback(
+    (fee) => {
+      if (!fee || fee === 0) return t("common.free");
+      return `PKR ${fee}`;
+    },
+    [t]
+  );
+
+  const doctorLabel = useCallback((appointment) => appointment?.doctor?.name || t("dash.patient.yourDoctor"), [t]);
+
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [doctorFilter, setDoctorFilter] = useState({ search: "", specialization: "all" });
@@ -72,7 +79,7 @@ const PatientDashboard = () => {
         lastCheckup: summary.lastCheckup || "",
       });
     } catch (error) {
-      toast.error("Failed to load profile summary");
+      toast.error(i18n.t("dash.patient.toast.loadSummaryFail"));
     }
   };
 
@@ -84,9 +91,12 @@ const PatientDashboard = () => {
         data.forEach((newAppt) => {
           const oldAppt = prevAppointmentsRef.current.find((a) => a._id === newAppt._id);
           if (oldAppt && oldAppt.status !== "in-progress" && newAppt.status === "in-progress") {
-            toast.success(`${newAppt.doctor?.name || "Your doctor"} has marked your appointment as in progress.`, {
-              duration: 8000,
-            });
+            toast.success(
+              i18n.t("dash.patient.toast.inProgress", {
+                doctor: newAppt.doctor?.name || i18n.t("dash.patient.yourDoctor"),
+              }),
+              { duration: 8000 }
+            );
           }
         });
       }
@@ -125,7 +135,7 @@ const PatientDashboard = () => {
       if (!paymentStatus) return;
 
       if (paymentStatus === "cancelled") {
-        toast("Stripe payment was cancelled.");
+        toast(i18n.t("dash.patient.toast.paymentCancelled"));
         navigate("/dashboard", { replace: true });
         return;
       }
@@ -137,20 +147,20 @@ const PatientDashboard = () => {
 
       try {
         await patient.post("/appointments/verify-payment", { sessionId, appointmentId });
-        toast.success("Stripe payment verified successfully.");
+        toast.success(i18n.t("dash.patient.toast.paymentVerified"));
         const refreshedAppointments = await fetchAppointments();
         const paidAppointment = refreshedAppointments.find((appt) => appt._id === appointmentId);
         if (paidAppointment) {
           setReviewModal({
             isOpen: true,
             appointmentId: paidAppointment._id,
-            doctorName: paidAppointment.doctor?.name || "Doctor",
+            doctorName: paidAppointment.doctor?.name || i18n.t("dash.patient.unnamedDoctor"),
             rating: 5,
             comment: "",
           });
         }
       } catch (error) {
-        toast.error(error.response?.data?.message || "Stripe payment verification failed");
+        toast.error(error.response?.data?.message || i18n.t("dash.patient.toast.verifyFail"));
       } finally {
         navigate("/dashboard", { replace: true });
       }
@@ -195,7 +205,7 @@ const PatientDashboard = () => {
     e.preventDefault();
     const normalizedTimeSlot = normalizeTimeSlot(form.timeSlot);
     if (!normalizedTimeSlot) {
-      toast.error("Please select a valid time slot");
+      toast.error(t("dash.patient.toast.invalidSlot"));
       return;
     }
 
@@ -208,13 +218,13 @@ const PatientDashboard = () => {
 
     try {
       await patient.post("/appointments", payload);
-      toast.success("Service booked and WhatsApp sent");
+      toast.success(t("dash.patient.toast.booked"));
       setForm({ doctorProfileId: "", date: "", timeSlot: "", reason: "" });
       setAvailableSlots([]);
       setBookingModalOpen(false);
       fetchAppointments();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Booking failed");
+      toast.error(error.response?.data?.message || t("dash.patient.toast.bookingFail"));
     }
   };
 
@@ -224,8 +234,8 @@ const PatientDashboard = () => {
   };
 
   const reschedule = async (id) => {
-    const date = window.prompt("Enter new date (YYYY-MM-DD)");
-    const timeSlot = window.prompt("Enter new time slot (HH:mm)");
+    const date = window.prompt(t("dash.patient.history.promptDate"));
+    const timeSlot = window.prompt(t("dash.patient.history.promptTime"));
     if (!date || !timeSlot) return;
     await patient.put(`/appointments/${id}/reschedule`, { date, timeSlot });
     fetchAppointments();
@@ -236,7 +246,7 @@ const PatientDashboard = () => {
       const appointmentTime = new Date(`${appointment.date}T${appointment.timeSlot}:00`);
       const diffMins = (appointmentTime - new Date()) / (1000 * 60);
       if (diffMins > 5) {
-        toast.error("Please wait. You can only join up to 5 minutes before your scheduled time.");
+        toast.error(t("dash.patient.toast.joinTooEarly"));
         return;
       }
     }
@@ -247,12 +257,12 @@ const PatientDashboard = () => {
     try {
       const { data } = await patient.post(`/appointments/${id}/create-checkout-session`);
       if (!data?.url) {
-        toast.error("Unable to initialize Stripe checkout");
+        toast.error(t("dash.patient.toast.stripeInitFail"));
         return;
       }
       window.location.href = data.url;
     } catch (err) {
-      toast.error(err.response?.data?.message || "Payment failed. Please try again.");
+      toast.error(err.response?.data?.message || t("dash.patient.toast.paymentFail"));
     }
   };
 
@@ -261,12 +271,12 @@ const PatientDashboard = () => {
     try {
       const { data } = await patient.post(`/appointments/${paymentModal.appointmentId}/create-checkout-session`);
       if (!data?.url) {
-        toast.error("Unable to initialize Stripe checkout");
+        toast.error(t("dash.patient.toast.stripeInitFail"));
         return;
       }
       window.location.href = data.url;
     } catch (err) {
-      toast.error(err.response?.data?.message || "Payment failed. Please try again.");
+      toast.error(err.response?.data?.message || t("dash.patient.toast.paymentFail"));
     }
   };
 
@@ -278,11 +288,11 @@ const PatientDashboard = () => {
         rating: reviewModal.rating,
         comment: reviewModal.comment,
       });
-      toast.success("Thank you for your feedback!");
+      toast.success(t("dash.patient.toast.thankReview"));
       setReviewModal({ isOpen: false, appointmentId: null, doctorName: "", rating: 5, comment: "" });
       fetchDoctors();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to submit review");
+      toast.error(err.response?.data?.message || t("dash.patient.toast.reviewFail"));
     }
   };
 
@@ -297,9 +307,9 @@ const PatientDashboard = () => {
         lastCheckup: healthSummary.lastCheckup,
       };
       await patient.put("/auth/health-summary", payload);
-      toast.success("Profile summary updated");
+      toast.success(t("dash.patient.toast.summaryUpdated"));
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update profile summary");
+      toast.error(error.response?.data?.message || t("dash.patient.toast.summaryFail"));
     } finally {
       setSavingHealthSummary(false);
     }
@@ -311,8 +321,8 @@ const PatientDashboard = () => {
       if (a.status === "accepted") {
         list.push({
           id: `accepted-${a._id}`,
-          title: "Request Accepted!",
-          message: `${doctorLabel(a)} accepted your service request. You can join the call now.`,
+          title: t("dash.patient.notif.acceptedTitle"),
+          message: t("dash.patient.notif.acceptedBody", { doctor: doctorLabel(a) }),
           type: "info",
           linkTab: "history",
         });
@@ -320,8 +330,8 @@ const PatientDashboard = () => {
       if (a.status === "in-progress") {
         list.push({
           id: `call-${a._id}`,
-          title: "Call In-Progress",
-          message: `${doctorLabel(a)} is waiting for you.`,
+          title: t("dash.patient.notif.callTitle"),
+          message: t("dash.patient.notif.callBody", { doctor: doctorLabel(a) }),
           type: "alert",
           linkTab: "history",
         });
@@ -329,8 +339,8 @@ const PatientDashboard = () => {
       if (a.status === "awaiting-payment") {
         list.push({
           id: `pay-${a._id}`,
-          title: "Payment Pending",
-          message: `Please pay ${formatServiceFee(a.doctorProfile?.consultationFee || 2000)} to complete your service.`,
+          title: t("dash.patient.notif.payTitle"),
+          message: t("dash.patient.notif.payBody", { fee: formatServiceFee(a.doctorProfile?.consultationFee || 2000) }),
           type: "info",
           linkTab: "payments",
         });
@@ -338,8 +348,8 @@ const PatientDashboard = () => {
       if (a.prescription) {
         list.push({
           id: `rx-${a._id}`,
-          title: "New Prescription",
-          message: `${doctorLabel(a)} has sent you a prescription.`,
+          title: t("dash.patient.notif.rxTitle"),
+          message: t("dash.patient.notif.rxBody", { doctor: doctorLabel(a) }),
           type: "info",
           linkTab: "history",
         });
@@ -347,15 +357,15 @@ const PatientDashboard = () => {
       if (a.review?.doctorResponse) {
         list.push({
           id: `rev-${a._id}`,
-          title: "Doctor Replied",
-          message: `${doctorLabel(a)} responded to your feedback.`,
+          title: t("dash.patient.notif.replyTitle"),
+          message: t("dash.patient.notif.replyBody", { doctor: doctorLabel(a) }),
           type: "info",
           linkTab: "history",
         });
       }
     });
     return list;
-  }, [appointments]);
+  }, [appointments, t, formatServiceFee, doctorLabel]);
 
   const dashboardStats = useMemo(() => {
     const upcomingCount = appointments.filter((a) =>
@@ -365,11 +375,11 @@ const PatientDashboard = () => {
     const serviceNotesCount = appointments.filter((a) => a.status === "completed" || Boolean(a.prescription)).length;
 
     return [
-      { id: "upcoming", label: "Upcoming Appointments", value: upcomingCount, icon: AppointmentIcon },
-      { id: "completed", label: "Completed Appointments", value: completedCount, icon: DashboardIcon },
-      { id: "reports", label: "Medical Reports", value: serviceNotesCount, icon: DoctorIcon },
+      { id: "upcoming", label: t("dash.patient.stats.upcoming"), value: upcomingCount, icon: AppointmentIcon },
+      { id: "completed", label: t("dash.patient.stats.completed"), value: completedCount, icon: DashboardIcon },
+      { id: "reports", label: t("dash.patient.stats.reports"), value: serviceNotesCount, icon: DoctorIcon },
     ];
-  }, [appointments]);
+  }, [appointments, t]);
 
   const nextAppointment = useMemo(() => {
     const now = new Date();
@@ -407,26 +417,26 @@ const PatientDashboard = () => {
   return (
     <>
       <DashboardShell
-        title="Patient dashboard"
-        subtitle="Book doctors, pay for services, and manage your profile."
+        title={t("dash.patient.title")}
+        subtitle={t("dash.patient.subtitle")}
         notifications={notifications}
         navItems={[
-          { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
-          { id: "doctors", label: "Find doctors", icon: DoctorIcon },
-          { id: "health-summary", label: "Profile summary", icon: AppointmentIcon },
+          { id: "dashboard", label: t("dash.patient.nav.dashboard"), icon: DashboardIcon },
+          { id: "doctors", label: t("dash.patient.nav.doctors"), icon: DoctorIcon },
+          { id: "health-summary", label: t("dash.patient.nav.healthSummary"), icon: AppointmentIcon },
           {
             id: "payments",
-            label: "Payment history",
+            label: t("dash.patient.nav.payments"),
             icon: PaymentIcon,
             hasNotification: appointments.some((a) => a.status === "awaiting-payment"),
           },
           {
             id: "history",
-            label: "Booking history",
+            label: t("dash.patient.nav.history"),
             icon: FileIcon,
             hasNotification: appointments.some((a) => a.status === "accepted" || a.status === "in-progress"),
           },
-          { id: "settings", label: "Settings", icon: SettingsIcon },
+          { id: "settings", label: t("dash.patient.nav.settings"), icon: SettingsIcon },
         ]}
       >
         {(activeTab) => (
@@ -496,14 +506,12 @@ const PatientDashboard = () => {
       {paymentModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Complete Stripe Payment</h3>
-            <p className="text-sm text-slate-500 mb-6">
-              Pay the service fee securely via Stripe for {paymentModal.doctorName}.
-            </p>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">{t("dash.patient.stripeModal.title")}</h3>
+            <p className="text-sm text-slate-500 mb-6">{t("dash.patient.stripeModal.subtitle", { name: paymentModal.doctorName })}</p>
 
             <form onSubmit={processPayment} className="space-y-4">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Payment Processor</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700">{t("dash.patient.stripeModal.processor")}</label>
                 <input
                   type="text"
                   value="Stripe"
@@ -513,10 +521,10 @@ const PatientDashboard = () => {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">Card Information</label>
+                <label className="mb-1 block text-sm font-medium text-slate-700">{t("dash.patient.stripeModal.cardInfo")}</label>
                 <input
                   type="text"
-                  placeholder="4242 4242 4242 4242"
+                  placeholder={t("dash.patient.stripeModal.cardPh")}
                   className="w-full rounded-xl border border-slate-300 p-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
                 />
               </div>
@@ -524,12 +532,12 @@ const PatientDashboard = () => {
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="text"
-                  placeholder="MM/YY"
+                  placeholder={t("dash.patient.stripeModal.expPh")}
                   className="rounded-xl border border-slate-300 p-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
                 />
                 <input
                   type="text"
-                  placeholder="CVC"
+                  placeholder={t("dash.patient.stripeModal.cvcPh")}
                   className="rounded-xl border border-slate-300 p-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
                 />
               </div>
@@ -540,10 +548,10 @@ const PatientDashboard = () => {
                   onClick={() => setPaymentModal({ isOpen: false, appointmentId: null, doctorName: "" })}
                   className="w-full rounded-xl border border-slate-300 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
-                  Cancel
+                  {t("dash.patient.stripeModal.cancel")}
                 </button>
                 <button type="submit" className="w-full rounded-xl bg-brand-600 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
-                  Pay with Stripe
+                  {t("dash.patient.stripeModal.pay")}
                 </button>
               </div>
             </form>

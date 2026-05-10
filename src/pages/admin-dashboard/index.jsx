@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   PieChart,
   Pie,
@@ -24,10 +25,20 @@ import { AppointmentIcon, DashboardIcon, DoctorIcon, FileIcon, SettingsIcon, Use
 import Loader from "../../components/Loader";
 import { useAuth } from "../../state/AuthContext";
 import AdminStatsCards from "./components/AdminStatsCards";
+import { appointmentStatusLabel } from "../../utils/statusLabel";
 
 const COLORS = ["#2563eb", "#16a34a", "#f59e0b", "#dc2626", "#9333ea"];
 
+const roleLabel = (role, t) => {
+  const r = String(role || "").toLowerCase();
+  if (r === "patient") return t("dash.shell.rolePatient");
+  if (r === "doctor") return t("dash.shell.roleDoctor");
+  if (r === "admin") return t("dash.shell.roleAdmin");
+  return role || "—";
+};
+
 const AdminDashboard = () => {
+  const { t } = useTranslation();
   const { refreshUser } = useAuth();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -60,7 +71,7 @@ const AdminDashboard = () => {
       setAppointments(appointmentsData);
       setChartKey((prev) => prev + 1);
     } catch (error) {
-      toast.error("Failed to load admin data");
+      toast.error(t("dash.admin.toast.loadFail"));
     } finally {
       setLoading(false);
     }
@@ -71,37 +82,38 @@ const AdminDashboard = () => {
   }, []);
 
   const updateApplicationStatus = async (id, status) => {
-    if (!window.confirm(`Are you sure you want to ${status} this doctor?`)) return;
+    const confirmMsg = status === "approved" ? t("dash.admin.toast.confirmApprove") : t("dash.admin.toast.confirmReject");
+    if (!window.confirm(confirmMsg)) return;
     await patient.patch(`/admin/doctor-applications/${id}/status`, { status });
-    toast.success(`Application ${status}`);
+    toast.success(status === "approved" ? t("dash.admin.toast.applicationApproved") : t("dash.admin.toast.applicationRejected"));
     load();
   };
 
   const blockDoctor = async (id) => {
-    if (!window.confirm("Block this approved doctor?")) return;
+    if (!window.confirm(t("dash.admin.toast.blockConfirm"))) return;
     await patient.patch(`/admin/approved-doctors/${id}/block`);
-    toast.success("Doctor blocked");
+    toast.success(t("dash.admin.toast.doctorBlocked"));
     load();
   };
 
   const suspendDoctor = async (id) => {
-    const hoursRaw = window.prompt("Temporary suspend duration (hours). Example: 24", "24");
+    const hoursRaw = window.prompt(t("dash.admin.toast.suspendPrompt"), "24");
     if (hoursRaw === null) return;
     const hours = Number(hoursRaw);
     if (!Number.isFinite(hours) || hours <= 0) {
-      toast.error("Invalid hours value");
+      toast.error(t("dash.admin.toast.invalidHours"));
       return;
     }
-    const reason = window.prompt("Reason (optional)", "Temporarily suspended");
+    const reason = window.prompt(t("dash.admin.toast.suspendReason"), t("dash.admin.toast.suspendReasonDefault"));
     await patient.patch(`/admin/approved-doctors/${id}/suspend`, { hours, reason: reason || "" });
-    toast.success("Doctor temporarily suspended");
+    toast.success(t("dash.admin.toast.doctorSuspended"));
     load();
   };
 
   const unsuspendDoctor = async (id) => {
-    if (!window.confirm("Remove temporary suspension for this doctor?")) return;
+    if (!window.confirm(t("dash.admin.toast.unsuspendConfirm"))) return;
     await patient.patch(`/admin/approved-doctors/${id}/unsuspend`);
-    toast.success("Doctor suspension removed");
+    toast.success(t("dash.admin.toast.suspensionRemoved"));
     load();
   };
 
@@ -140,19 +152,22 @@ const AdminDashboard = () => {
   const coreStatsCards = useMemo(() => {
     const pct = stats?.commissionRatePercent ?? 20;
     return [
-      { label: "Total booking revenue", value: `PKR ${stats?.totalRevenue ?? 0}`, icon: FileIcon },
-      { label: `Platform commission (${pct}%)`, value: `PKR ${stats?.platformCommission ?? 0}`, icon: FileIcon },
-      { label: "Active Doctors", value: stats?.activeDoctors ?? 0, icon: DoctorIcon },
-      { label: "Inactive Doctors", value: stats?.inactiveDoctors ?? 0, icon: DoctorIcon },
+      { label: t("dash.admin.stats.totalRevenue"), value: `PKR ${stats?.totalRevenue ?? 0}`, icon: FileIcon },
+      { label: t("dash.admin.stats.commission", { pct }), value: `PKR ${stats?.platformCommission ?? 0}`, icon: FileIcon },
+      { label: t("dash.admin.stats.activeDoctors"), value: stats?.activeDoctors ?? 0, icon: DoctorIcon },
+      { label: t("dash.admin.stats.inactiveDoctors"), value: stats?.inactiveDoctors ?? 0, icon: DoctorIcon },
     ];
-  }, [stats]);
+  }, [stats, t]);
 
   const appointmentDonutData = useMemo(() => {
     const base = stats?.statusAnalytics || [];
-    return base.length
-      ? base.map((item, index) => ({ ...item, fill: COLORS[index % COLORS.length] }))
-      : [{ status: "No Data", count: 1, fill: "#cbd5e1" }];
-  }, [stats]);
+    if (!base.length) return [{ status: "_none", displayName: t("dash.admin.charts.noData"), count: 1, fill: "#cbd5e1" }];
+    return base.map((item, index) => ({
+      ...item,
+      displayName: appointmentStatusLabel(item.status, t),
+      fill: COLORS[index % COLORS.length],
+    }));
+  }, [stats, t]);
 
   const attendanceData = useMemo(() => {
     const approved = approvedDoctors.length;
@@ -162,23 +177,28 @@ const AdminDashboard = () => {
     return {
       percent: present,
       chart: [
-        { name: "Present", value: present, fill: "#5B3F99" },
-        { name: "Absent", value: 100 - present, fill: "#F1692F" },
+        { name: t("dash.admin.charts.present"), value: present, fill: "#5B3F99" },
+        { name: t("dash.admin.charts.absent"), value: 100 - present, fill: "#F1692F" },
       ],
     };
-  }, [approvedDoctors, applications]);
+  }, [approvedDoctors, applications, t]);
 
   return (
     <DashboardShell
-      title="Admin Dashboard"
-      subtitle="Control doctor verification and system operations."
+      title={t("dash.admin.title")}
+      subtitle={t("dash.admin.subtitle")}
       navItems={[
-        { id: "dashboard", label: "Dashboard", icon: DashboardIcon },
-        { id: "applications", label: "Doctor Applications", icon: FileIcon, hasNotification: applications.some((a) => a.status === "pending") },
-        { id: "approved", label: "Doctors (Approved)", icon: DoctorIcon },
-        { id: "users", label: "Users", icon: UsersIcon },
-        { id: "appointments", label: "Bookings", icon: AppointmentIcon },
-        { id: "settings", label: "Settings", icon: SettingsIcon },
+        { id: "dashboard", label: t("dash.admin.nav.dashboard"), icon: DashboardIcon },
+        {
+          id: "applications",
+          label: t("dash.admin.nav.applications"),
+          icon: FileIcon,
+          hasNotification: applications.some((a) => a.status === "pending"),
+        },
+        { id: "approved", label: t("dash.admin.nav.approved"), icon: DoctorIcon },
+        { id: "users", label: t("dash.admin.nav.users"), icon: UsersIcon },
+        { id: "appointments", label: t("dash.admin.nav.appointments"), icon: AppointmentIcon },
+        { id: "settings", label: t("dash.admin.nav.settings"), icon: SettingsIcon },
       ]}
     >
       {(activeTab) => (
@@ -195,14 +215,14 @@ const AdminDashboard = () => {
 
               <section className="grid gap-4 lg:grid-cols-3">
                 <article className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="mb-4 text-lg font-semibold text-slate-900">Bookings</h3>
+                  <h3 className="mb-4 text-lg font-semibold text-slate-900">{t("dash.admin.charts.bookings")}</h3>
                   <div className="relative flex-1" style={{ minHeight: 260 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart key={`status-${chartKey}`}>
                         <Pie
                           data={appointmentDonutData}
                           dataKey="count"
-                          nameKey="status"
+                          nameKey="displayName"
                           outerRadius={95}
                           innerRadius={65}
                           isAnimationActive
@@ -210,7 +230,7 @@ const AdminDashboard = () => {
                           stroke="none"
                         >
                           {appointmentDonutData.map((entry, index) => (
-                            <Cell key={`${entry.status}-${index}`} fill={entry.fill} />
+                            <Cell key={`${entry.displayName || entry.status}-${index}`} fill={entry.fill} />
                           ))}
                         </Pie>
                         <Tooltip />
@@ -222,16 +242,16 @@ const AdminDashboard = () => {
 
                 <article className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="mb-2 flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-slate-900">Verification Ratio</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.charts.verificationRatio")}</h3>
                   </div>
                   <div className="mb-4 flex items-center gap-4 text-sm">
                     <span className="inline-flex items-center gap-1">
                       <span className="h-2.5 w-2.5 rounded-full bg-[#5B3F99]" />
-                      Present
+                      {t("dash.admin.charts.present")}
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <span className="h-2.5 w-2.5 rounded-full bg-[#F1692F]" />
-                      Absent
+                      {t("dash.admin.charts.absent")}
                     </span>
                   </div>
                   <div className="relative flex-1" style={{ minHeight: 235 }}>
@@ -260,7 +280,7 @@ const AdminDashboard = () => {
                 </article>
 
                 <article className="flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="mb-4 text-lg font-semibold text-slate-900">Performance</h3>
+                  <h3 className="mb-4 text-lg font-semibold text-slate-900">{t("dash.admin.charts.performance")}</h3>
                   <div className="relative flex-1" style={{ minHeight: 260 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={verificationChartData} margin={{ left: -18, right: 0, top: 10, bottom: 0 }}>
@@ -269,8 +289,8 @@ const AdminDashboard = () => {
                         <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
                         <Tooltip cursor={{ fill: "transparent" }} />
                         <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                        <Bar dataKey="approved" name="Approved" fill="#5B3F99" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                        <Bar dataKey="rejected" name="Rejected" fill="#F1692F" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                        <Bar dataKey="approved" name={t("dash.admin.charts.approved")} fill="#5B3F99" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                        <Bar dataKey="rejected" name={t("dash.admin.charts.rejected")} fill="#F1692F" radius={[4, 4, 0, 0]} maxBarSize={40} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -279,52 +299,59 @@ const AdminDashboard = () => {
 
               <section className="grid gap-4 xl:grid-cols-2">
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-lg font-semibold text-slate-900">Patient Analytics</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.patientAnalytics")}</h3>
                   <div className="mt-3 grid gap-2 text-sm">
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>New Patients (Today)</span>
+                      <span>{t("dash.admin.newPatientsToday")}</span>
                       <b>{stats.patientAnalytics?.newPatientsToday ?? 0}</b>
                     </div>
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>New Patients (Month)</span>
+                      <span>{t("dash.admin.newPatientsMonth")}</span>
                       <b>{stats.patientAnalytics?.newPatientsMonth ?? 0}</b>
                     </div>
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>Returning Patients</span>
+                      <span>{t("dash.admin.returningPatients")}</span>
                       <b>{stats.patientAnalytics?.returningPatients ?? 0}</b>
                     </div>
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>Patient Growth Rate</span>
+                      <span>{t("dash.admin.growthRate")}</span>
                       <b>{stats.patientAnalytics?.growthRate ?? 0}%</b>
                     </div>
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>Gender Distribution</span>
+                      <span>{t("dash.admin.genderDistribution")}</span>
                       <b>
-                        M {stats.patientAnalytics?.genderDistribution?.male ?? 0} / F {stats.patientAnalytics?.genderDistribution?.female ?? 0}
+                        {t("dash.admin.maleFemale", {
+                          m: stats.patientAnalytics?.genderDistribution?.male ?? 0,
+                          f: stats.patientAnalytics?.genderDistribution?.female ?? 0,
+                        })}
                       </b>
                     </div>
                   </div>
                 </article>
 
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-lg font-semibold text-slate-900">Doctor Performance</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.doctorPerformance")}</h3>
                   <div className="mt-3 grid gap-2 text-sm">
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>Average Rating</span>
+                      <span>{t("dash.admin.averageRating")}</span>
                       <b>{stats.doctorPerformance?.averageDoctorRating ?? 0}</b>
                     </div>
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>Availability</span>
-                      <b>{stats.doctorPerformance?.doctorAvailabilityStatus?.availableDoctors ?? 0} Doctors Available</b>
+                      <span>{t("dash.admin.availability")}</span>
+                      <b>
+                        {t("dash.admin.doctorsAvailable", {
+                          n: stats.doctorPerformance?.doctorAvailabilityStatus?.availableDoctors ?? 0,
+                        })}
+                      </b>
                     </div>
                     <div className="flex justify-between rounded-lg bg-slate-100 p-2">
-                      <span>Pending Doctor Verifications</span>
+                      <span>{t("dash.admin.pendingVerifications")}</span>
                       <b>{stats.doctorPerformance?.pendingDoctorVerifications ?? 0}</b>
                     </div>
                     {(stats.doctorPerformance?.topPerformingDoctors || []).slice(0, 3).map((doc) => (
                       <div key={doc.doctorId} className="flex justify-between rounded-lg bg-slate-100 p-2">
                         <span>{doc.name}</span>
-                        <b>{doc.count} jobs</b>
+                        <b>{t("dash.admin.jobsCount", { count: doc.count })}</b>
                       </div>
                     ))}
                   </div>
@@ -333,7 +360,7 @@ const AdminDashboard = () => {
 
               <section className="grid gap-4 xl:grid-cols-2">
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-lg font-semibold text-slate-900">Monthly Booking Trend</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.monthlyTrend")}</h3>
                   <div style={{ width: "100%", height: 250 }}>
                     <ResponsiveContainer>
                       <LineChart data={stats.monthlyAppointmentTrend || []}>
@@ -348,7 +375,7 @@ const AdminDashboard = () => {
                 </article>
 
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-lg font-semibold text-slate-900">Revenue Growth Chart</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.revenueGrowth")}</h3>
                   <div style={{ width: "100%", height: 250 }}>
                     <ResponsiveContainer>
                       <AreaChart data={stats.monthlyEarningsTrend || []}>
@@ -365,63 +392,67 @@ const AdminDashboard = () => {
 
               <section className="grid gap-4 xl:grid-cols-3">
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-base font-semibold text-slate-900">Booking Insights</h3>
+                  <h3 className="text-base font-semibold text-slate-900">{t("dash.admin.bookingInsights")}</h3>
                   <div className="mt-3 space-y-2 text-sm">
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Peak Booking Hours: <b>{stats.appointmentInsights?.peakBookingHour || "N/A"}</b>
+                      {t("dash.admin.peakHours")} <b>{stats.appointmentInsights?.peakBookingHour || "N/A"}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Most Booked Category: <b>{stats.appointmentInsights?.mostBookedSpecialization || "N/A"}</b>
+                      {t("dash.admin.mostBooked")} <b>{stats.appointmentInsights?.mostBookedSpecialization || "N/A"}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Avg Duration: <b>{stats.appointmentInsights?.averageAppointmentDuration || 0} mins</b>
+                      {t("dash.admin.avgDuration")}{" "}
+                      <b>{t("dash.admin.mins", { n: stats.appointmentInsights?.averageAppointmentDuration || 0 })}</b>
                     </p>
                   </div>
                 </article>
 
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-base font-semibold text-slate-900">Financial Stats</h3>
+                  <h3 className="text-base font-semibold text-slate-900">{t("dash.admin.financialStats")}</h3>
                   <div className="mt-3 space-y-2 text-sm">
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Total booking revenue: <b>PKR {stats?.totalRevenue ?? 0}</b>
+                      {t("dash.admin.totalBookingRevenue")} <b>PKR {stats?.totalRevenue ?? 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Platform commission ({stats?.commissionRatePercent ?? 20}%):{" "}
+                      {t("dash.admin.platformCommissionLine", { pct: stats?.commissionRatePercent ?? 20 })}{" "}
                       <b>PKR {stats.financialStats?.platformCommission ?? stats?.platformCommission ?? 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Doctor payouts ({100 - (stats?.commissionRatePercent ?? 20)}%):{" "}
+                      {t("dash.admin.doctorPayouts", { pct: 100 - (stats?.commissionRatePercent ?? 20) })}{" "}
                       <b>PKR {stats.financialStats?.doctorPayoutTotal ?? stats?.doctorPayoutTotal ?? 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Daily revenue (completed today): <b>PKR {stats.financialStats?.dailyEarnings || 0}</b>
+                      {t("dash.admin.dailyRevenue")} <b>PKR {stats.financialStats?.dailyEarnings || 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Monthly revenue (completed this month): <b>PKR {stats.financialStats?.monthlyEarnings || 0}</b>
+                      {t("dash.admin.monthlyRevenue")} <b>PKR {stats.financialStats?.monthlyEarnings || 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Cash / Online: <b>{stats.financialStats?.paymentMethods?.cash || 0}/{stats.financialStats?.paymentMethods?.online || 0}</b>
+                      {t("dash.admin.cashOnline")}{" "}
+                      <b>
+                        {stats.financialStats?.paymentMethods?.cash || 0}/{stats.financialStats?.paymentMethods?.online || 0}
+                      </b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Pending Payments: <b>{stats.financialStats?.pendingPayments || 0}</b>
+                      {t("dash.admin.pendingPayments")} <b>{stats.financialStats?.pendingPayments || 0}</b>
                     </p>
                   </div>
                 </article>
 
                 <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-base font-semibold text-slate-900">System Activity</h3>
+                  <h3 className="text-base font-semibold text-slate-900">{t("dash.admin.systemActivity")}</h3>
                   <div className="mt-3 space-y-2 text-sm">
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Logins Today: <b>{stats.systemActivity?.totalLoginsToday || 0}</b>
+                      {t("dash.admin.loginsToday")} <b>{stats.systemActivity?.totalLoginsToday || 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Active Users: <b>{stats.systemActivity?.activeUsersRightNow || 0}</b>
+                      {t("dash.admin.activeUsers")} <b>{stats.systemActivity?.activeUsersRightNow || 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Failed Logins: <b>{stats.systemActivity?.failedLoginAttempts || 0}</b>
+                      {t("dash.admin.failedLogins")} <b>{stats.systemActivity?.failedLoginAttempts || 0}</b>
                     </p>
                     <p className="rounded-lg bg-slate-100 p-2">
-                      Notifications Sent: <b>{stats.systemActivity?.notificationsSent || 0}</b>
+                      {t("dash.admin.notificationsSent")} <b>{stats.systemActivity?.notificationsSent || 0}</b>
                     </p>
                   </div>
                 </article>
@@ -431,20 +462,20 @@ const AdminDashboard = () => {
 
           {!loading && activeTab === "applications" && (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Doctor Applications</h3>
+              <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.applicationsTitle")}</h3>
               {applications.length === 0 ? (
-                <p className="mt-4 text-sm text-slate-500">No applications found.</p>
+                <p className="mt-4 text-sm text-slate-500">{t("dash.admin.noApplications")}</p>
               ) : (
                 <div className="mt-4 overflow-x-auto">
-                  <table className="min-w-full text-left text-sm">
+                  <table className="min-w-full text-start text-sm">
                     <thead className="bg-slate-100 text-slate-700">
                       <tr>
-                        <th className="px-4 py-3">Name</th>
-                        <th className="px-4 py-3">Email</th>
-                        <th className="px-4 py-3">Service Category</th>
-                        <th className="px-4 py-3">Certification File</th>
-                        <th className="px-4 py-3">Status</th>
-                        <th className="px-4 py-3">Actions</th>
+                        <th className="px-4 py-3">{t("dash.admin.tableName")}</th>
+                        <th className="px-4 py-3">{t("dash.admin.tableEmail")}</th>
+                        <th className="px-4 py-3">{t("dash.admin.tableCategory")}</th>
+                        <th className="px-4 py-3">{t("dash.admin.tableCert")}</th>
+                        <th className="px-4 py-3">{t("dash.admin.tableStatus")}</th>
+                        <th className="px-4 py-3">{t("dash.admin.tableActions")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -455,19 +486,21 @@ const AdminDashboard = () => {
                           <td className="px-4 py-3">{item.specialization}</td>
                           <td className="px-4 py-3">
                             <a className="text-brand-700 underline" href={buildBackendAssetUrl(item.degreeFile)} target="_blank" rel="noreferrer">
-                              View
+                              {t("dash.admin.tableView")}
                             </a>
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(item.status)}`}>{item.status}</span>
+                            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(item.status)}`}>
+                              {appointmentStatusLabel(item.status, t)}
+                            </span>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex gap-2">
                               <button type="button" className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" onClick={() => updateApplicationStatus(item._id, "approved")}>
-                                Approve
+                                {t("dash.admin.approve")}
                               </button>
                               <button type="button" className="rounded bg-rose-600 px-2 py-1 text-xs font-semibold text-white" onClick={() => updateApplicationStatus(item._id, "rejected")}>
-                                Reject
+                                {t("dash.admin.reject")}
                               </button>
                             </div>
                           </td>
@@ -482,16 +515,16 @@ const AdminDashboard = () => {
 
           {!loading && activeTab === "approved" && (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Approved Doctors</h3>
+              <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.approvedTitle")}</h3>
               <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full text-left text-sm">
+                <table className="min-w-full text-start text-sm">
                   <thead className="bg-slate-100 text-slate-700">
                     <tr>
-                      <th className="px-4 py-3">Name</th>
-                      <th className="px-4 py-3">Email</th>
-                      <th className="px-4 py-3">Service Category</th>
-                      <th className="px-4 py-3">Status</th>
-                      <th className="px-4 py-3">Action</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableName")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableEmail")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableCategory")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableStatus")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableActions")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -503,13 +536,19 @@ const AdminDashboard = () => {
                         <td className="px-4 py-3">
                           {item.user?.status === "suspended" ? (
                             <div className="space-y-1">
-                              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">temporarily suspended</span>
+                              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                                {appointmentStatusLabel("temporarily_suspended", t)}
+                              </span>
                               {item.user?.suspendedUntil && (
-                                <p className="text-[11px] text-slate-500">until {new Date(item.user.suspendedUntil).toLocaleString()}</p>
+                                <p className="text-[11px] text-slate-500">
+                                  {t("dash.admin.until")} {new Date(item.user.suspendedUntil).toLocaleString()}
+                                </p>
                               )}
                             </div>
                           ) : (
-                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">approved</span>
+                            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                              {appointmentStatusLabel("approved", t)}
+                            </span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -520,7 +559,7 @@ const AdminDashboard = () => {
                                 className="rounded bg-emerald-600 px-2 py-1 text-xs font-semibold text-white"
                                 onClick={() => unsuspendDoctor(item._id)}
                               >
-                                Remove suspend
+                                {t("dash.admin.removeSuspend")}
                               </button>
                             ) : (
                               <button
@@ -528,7 +567,7 @@ const AdminDashboard = () => {
                                 className="rounded bg-amber-600 px-2 py-1 text-xs font-semibold text-white"
                                 onClick={() => suspendDoctor(item._id)}
                               >
-                                Temp block
+                                {t("dash.admin.tempBlock")}
                               </button>
                             )}
                             <button
@@ -536,7 +575,7 @@ const AdminDashboard = () => {
                               className="rounded bg-rose-600 px-2 py-1 text-xs font-semibold text-white"
                               onClick={() => blockDoctor(item._id)}
                             >
-                              Perm block
+                              {t("dash.admin.permBlock")}
                             </button>
                           </div>
                         </td>
@@ -550,14 +589,14 @@ const AdminDashboard = () => {
 
           {!loading && activeTab === "users" && (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Users</h3>
+              <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.usersTitle")}</h3>
               <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full text-left text-sm">
+                <table className="min-w-full text-start text-sm">
                   <thead className="bg-slate-100 text-slate-700">
                     <tr>
-                      <th className="px-4 py-3">Name</th>
-                      <th className="px-4 py-3">Email</th>
-                      <th className="px-4 py-3">Role</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableName")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableEmail")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableRole")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -565,7 +604,7 @@ const AdminDashboard = () => {
                       <tr key={u._id} className="border-b hover:bg-slate-50">
                         <td className="px-4 py-3">{u.name}</td>
                         <td className="px-4 py-3">{u.email}</td>
-                        <td className="px-4 py-3">{u.role}</td>
+                        <td className="px-4 py-3">{roleLabel(u.role, t)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -577,23 +616,23 @@ const AdminDashboard = () => {
           {!loading && activeTab === "settings" && (
             <AccountProfileForm
               refreshUser={refreshUser}
-              title="Admin settings"
-              description="Update your administrator name, email, phone, and password."
+              title={t("dash.admin.settingsTitle")}
+              description={t("dash.admin.settingsDesc")}
               idPrefix="admin-acct"
             />
           )}
 
           {!loading && activeTab === "appointments" && (
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Bookings</h3>
+              <h3 className="text-lg font-semibold text-slate-900">{t("dash.admin.appointmentsTitle")}</h3>
               <div className="mt-4 overflow-x-auto">
-                <table className="min-w-full text-left text-sm">
+                <table className="min-w-full text-start text-sm">
                   <thead className="bg-slate-100 text-slate-700">
                     <tr>
-                      <th className="px-4 py-3">Patient</th>
-                      <th className="px-4 py-3">Doctor</th>
-                      <th className="px-4 py-3">Date/Time</th>
-                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3">{t("dash.admin.tablePatient")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableDoctor")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableDateTime")}</th>
+                      <th className="px-4 py-3">{t("dash.admin.tableStatus")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -605,7 +644,9 @@ const AdminDashboard = () => {
                           {a.date} {a.timeSlot}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(a.status)}`}>{a.status}</span>
+                          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadge(a.status)}`}>
+                            {appointmentStatusLabel(a.status, t)}
+                          </span>
                         </td>
                       </tr>
                     ))}

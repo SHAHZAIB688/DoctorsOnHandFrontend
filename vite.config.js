@@ -5,6 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    include: ['socket.io-client', 'peerjs'],
+    include: ['socket.io-client', 'peerjs', 'firebase/app', 'firebase/auth', 'firebase/analytics'],
   },
 })

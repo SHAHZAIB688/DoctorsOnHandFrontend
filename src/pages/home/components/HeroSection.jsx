@@ -1,39 +1,47 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
-const HeroSection = ({ heroImages, currentImage }) => (
-  <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-brand-700 via-brand-600 to-cyan-600 px-6 py-12 text-white shadow-xl lg:px-12">
-    <div className="grid items-center gap-8 lg:grid-cols-2">
-      <div>
-        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-cyan-100">Trusted Healthcare Network</p>
-        <h1 className="text-3xl font-bold leading-tight md:text-5xl">Book Trusted Doctors in Minutes</h1>
-        <p className="mt-4 max-w-xl text-base text-cyan-50 md:text-lg">
-          Find experienced doctors, book appointments in seconds, and stay updated with secure reminders and notifications.
-        </p>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <Link to="/doctors" className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand-700 shadow hover:bg-cyan-50">
-            Find Doctors
-          </Link>
-          <Link to="/dashboard" className="rounded-xl border border-white/60 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10">
-            Book Appointment
-          </Link>
+const HeroSection = ({ heroImages, currentImage }) => {
+  const { t } = useTranslation();
+  return (
+    <section className="overflow-hidden rounded-3xl bg-gradient-to-r from-brand-700 via-brand-600 to-cyan-600 px-6 py-12 text-white shadow-xl lg:px-12">
+      <div className="grid items-center gap-8 lg:grid-cols-2">
+        <div>
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-cyan-100">{t("home.heroBadge")}</p>
+          <h1 className="text-3xl font-bold leading-tight md:text-5xl">{t("home.heroTitle")}</h1>
+          <p className="mt-4 max-w-xl text-base text-cyan-50 md:text-lg">{t("home.heroSubtitle")}</p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link
+              to="/doctors"
+              className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand-700 shadow hover:bg-cyan-50"
+            >
+              {t("home.findDoctors")}
+            </Link>
+            <Link
+              to="/dashboard"
+              className="rounded-xl border border-white/60 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              {t("home.bookAppointment")}
+            </Link>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <div className="relative h-72 w-full max-w-md">
+            {heroImages.map((img, index) => (
+              <img
+                key={img}
+                src={img}
+                alt={`${t("home.heroImgAlt")} ${index + 1}`}
+                className={`absolute left-0 top-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-4 ring-white/20 transition-opacity duration-1000 ${
+                  index === currentImage ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
-      <div className="flex justify-center">
-        <div className="relative h-72 w-full max-w-md">
-          {heroImages.map((img, index) => (
-            <img
-              key={img}
-              src={img}
-              alt={`Doctor consultation ${index + 1}`}
-              className={`absolute left-0 top-0 h-full w-full rounded-2xl object-cover shadow-2xl ring-4 ring-white/20 transition-opacity duration-1000 ${
-                index === currentImage ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default HeroSection;

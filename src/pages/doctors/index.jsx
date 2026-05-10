@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import patient from "../../api/client";
 import Loader from "../../components/Loader";
@@ -6,6 +7,7 @@ import DoctorsFilterBar from "./components/DoctorsFilterBar";
 import DoctorListCard from "./components/DoctorListCard";
 
 const DoctorsPage = () => {
+  const { t, i18n } = useTranslation();
   const [doctors, setDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,24 +16,50 @@ const DoctorsPage = () => {
   const [availability, setAvailability] = useState("All");
   const [searchLoading, setSearchLoading] = useState(false);
 
+  const EXPERIENCE_OPTIONS = useMemo(
+    () => [
+      { value: "All", label: t("doctors.exp.all") },
+      { value: "0-5", label: t("doctors.exp.range05") },
+      { value: "6-10", label: t("doctors.exp.range610") },
+      { value: "10+", label: t("doctors.exp.range10") },
+    ],
+    [t, i18n.language]
+  );
+
+  const AVAILABILITY_OPTIONS = useMemo(
+    () => [
+      { value: "All", label: t("doctors.avail.all") },
+      { value: "Monday", label: t("doctors.avail.mon") },
+      { value: "Tuesday", label: t("doctors.avail.tue") },
+      { value: "Wednesday", label: t("doctors.avail.wed") },
+      { value: "Thursday", label: t("doctors.avail.thu") },
+      { value: "Friday", label: t("doctors.avail.fri") },
+      { value: "Saturday", label: t("doctors.avail.sat") },
+      { value: "Sunday", label: t("doctors.avail.sun") },
+      { value: "Available Today", label: t("doctors.avail.today") },
+      { value: "Available This Week", label: t("doctors.avail.week") },
+      { value: "Weekend Only", label: t("doctors.avail.weekend") },
+    ],
+    [t, i18n.language]
+  );
+
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
         const { data } = await patient.get("/doctors");
         setDoctors(data || []);
         setFilteredDoctors(data || []);
-      } catch (error) {
-        toast.error("Unable to load doctors");
+      } catch {
+        toast.error(t("doctors.loadError"));
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchDoctors();
-    // Refresh doctors list every 30 seconds to reflect specialization changes
     const intervalId = setInterval(fetchDoctors, 30000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let result = doctors;
@@ -57,21 +85,6 @@ const DoctorsPage = () => {
     setFilteredDoctors(result);
   }, [search, experience, availability, doctors]);
 
-  const EXPERIENCE_OPTIONS = ["All", "0-5", "6-10", "10+"];
-  const AVAILABILITY_OPTIONS = [
-    "All",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-    "Available Today",
-    "Available This Week",
-    "Weekend Only",
-  ];
-
   const handleSearch = () => {
     setSearchLoading(true);
     setTimeout(() => setSearchLoading(false), 500);
@@ -86,8 +99,8 @@ const DoctorsPage = () => {
   return (
     <div className="space-y-8 pb-12">
       <section className="mb-8 flex flex-col items-center justify-center gap-2">
-        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">Find the Right Doctor</h1>
-        <p className="mt-2 text-slate-600">Search through our verified network of skilled professionals.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">{t("doctors.pageTitle")}</h1>
+        <p className="mt-2 text-slate-600">{t("doctors.pageSubtitle")}</p>
       </section>
 
       <DoctorsFilterBar
@@ -108,7 +121,7 @@ const DoctorsPage = () => {
         <div className="flex h-80 items-center justify-center rounded-[2.5rem] border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col items-center gap-4">
             <Loader />
-            <p className="text-sm font-medium text-slate-500">Fetching verified doctors...</p>
+            <p className="text-sm font-medium text-slate-500">{t("doctors.fetching")}</p>
           </div>
         </div>
       ) : filteredDoctors.length === 0 ? (
@@ -116,10 +129,8 @@ const DoctorsPage = () => {
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-slate-50 text-4xl shadow-inner">
             👨‍⚕️
           </div>
-          <h3 className="text-2xl font-bold text-slate-900">No doctors match your criteria</h3>
-          <p className="mx-auto mt-3 max-w-md text-slate-500">
-            We could not find any doctors matching your search. Try changing the category or clearing your search.
-          </p>
+          <h3 className="text-2xl font-bold text-slate-900">{t("doctors.emptyTitle")}</h3>
+          <p className="mx-auto mt-3 max-w-md text-slate-500">{t("doctors.emptyText")}</p>
         </div>
       ) : (
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
