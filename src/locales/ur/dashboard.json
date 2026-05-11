@@ -45,7 +45,11 @@
       "newPassword": "نیا پاس ورڈ",
       "confirmPassword": "نئے پاس ورڈ کی تصدیق",
       "saving": "محفوظ ہو رہا ہے...",
-      "saveAccount": "اکاؤنٹ محفوظ کریں"
+      "saveAccount": "اکاؤنٹ محفوظ کریں",
+      "locationTitle": "آپ کا مقام",
+      "locationHint": "قریبی ڈاکٹر تلاش میں مدد دیتا ہے۔ کسی بھی وقت بدل سکتے ہیں۔",
+      "locationCity": "شہر یا علاقہ",
+      "locationAddress": "پتہ"
     },
     "patient": {
       "title": "مریض ڈیش بورڈ",
@@ -127,7 +131,11 @@
         "rating": "درجہ بندی",
         "serviceFee": "خدمت کی فیس",
         "bookNow": "ابھی بُک کریں",
-        "empty": "تلاش یا زمرے کے مطابق کوئی ڈاکٹر نہیں ملا۔"
+        "empty": "تلاش یا زمرے کے مطابق کوئی ڈاکٹر نہیں ملا۔",
+        "nearMe": "قریب کے",
+        "clearNearMe": "سب دکھائیں",
+        "nearMeOn": "آپ کے موجودہ مقام کے قریب ڈاکٹر دکھائے جا رہے ہیں۔",
+        "distanceAway": "{{km}} کلومیٹر دور"
       },
       "history": {
         "title": "بُکنگ کی تاریخ",
@@ -294,6 +302,8 @@
       "yearsUnit": "سال",
       "experienceLabel": "تجربہ",
       "serviceRateLabel": "خدمت کی فیس",
+      "practiceLocationTitle": "کلینک / مشق کا مقام",
+      "practiceLocationUnset": "ابھی کوئی پتہ درج نہیں۔ قریبی تلاش کیلئے شامل کریں۔",
       "bioTitle": "تعارف",
       "noBio": "ابھی تعارف نہیں۔",
       "bioPlaceholder": "مریضوں کیلئے اپنی خدمات اور تجربہ لکھیں...",

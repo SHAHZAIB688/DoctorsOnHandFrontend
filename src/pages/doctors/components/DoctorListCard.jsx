@@ -28,6 +28,12 @@ const DoctorListCard = ({ doctor }) => {
           <div className="min-w-0">
             <h3 className="text-xl font-bold text-slate-900 transition-colors group-hover:text-brand-600">{doctor.user?.name}</h3>
             <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-brand-500">{doctor.specialization}</p>
+            {doctor.distanceKm != null && (
+              <p className="mt-1 text-xs font-medium text-slate-500">{t("dash.patient.doctors.distanceAway", { km: doctor.distanceKm })}</p>
+            )}
+            {(doctor.locationCity || doctor.locationAddress) && (
+              <p className="mt-0.5 text-xs text-slate-400">{[doctor.locationCity, doctor.locationAddress].filter(Boolean).join(" · ")}</p>
+            )}
           </div>
           <div className="flex shrink-0 items-center gap-1.5 rounded-xl border border-amber-100 bg-amber-50 px-3 py-1.5 text-sm font-bold text-amber-600">
             ★ 4.8

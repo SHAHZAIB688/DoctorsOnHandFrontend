@@ -24,6 +24,10 @@ const SignupPage = () => {
     specialization: "General Physician",
     experience: "",
     degreeFile: null,
+    locationCity: "",
+    locationAddress: "",
+    locationLat: "",
+    locationLng: "",
   });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -93,6 +97,24 @@ const SignupPage = () => {
 
   const onDropdownChange = (name, value) => {
     setForm((p) => ({ ...p, [name]: value }));
+  };
+
+  const fillLocationFromBrowser = () => {
+    if (!navigator.geolocation) {
+      toast.error(t("auth.geoNotSupported"));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((p) => ({
+          ...p,
+          locationLat: pos.coords.latitude,
+          locationLng: pos.coords.longitude,
+        }));
+        toast.success(t("auth.geoSuccess"));
+      },
+      () => toast.error(t("auth.geoDenied"))
+    );
   };
 
   const onSubmit = async (e) => {
@@ -202,6 +224,40 @@ const SignupPage = () => {
               required
               className="w-full border-b border-slate-200 py-2 text-sm outline-none transition-colors focus:border-brand-600 sm:py-3"
             />
+
+            <div className="space-y-2 rounded-xl border border-slate-100 bg-slate-50/80 p-3 sm:p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t("auth.locationSection")}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <input
+                  name="locationCity"
+                  placeholder={t("auth.locationCityPh")}
+                  value={form.locationCity}
+                  onChange={onChange}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand-600"
+                />
+                <input
+                  name="locationAddress"
+                  placeholder={t("auth.locationAddressPh")}
+                  value={form.locationAddress}
+                  onChange={onChange}
+                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-brand-600 sm:col-span-2"
+                />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={fillLocationFromBrowser}
+                  className="rounded-lg border border-brand-200 bg-white px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50"
+                >
+                  {t("auth.useMyLocation")}
+                </button>
+                {Number.isFinite(Number(form.locationLat)) && Number.isFinite(Number(form.locationLng)) && (
+                  <span className="text-xs text-slate-500">
+                    {t("auth.coordsHint", { lat: Number(form.locationLat).toFixed(4), lng: Number(form.locationLng).toFixed(4) })}
+                  </span>
+                )}
+              </div>
+            </div>
 
             <Dropdown
               options={rolesOptions}

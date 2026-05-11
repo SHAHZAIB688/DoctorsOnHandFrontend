@@ -5,6 +5,7 @@ import LogoImg from "../assets/logo2.jpeg";
 import { useAuth } from "../state/AuthContext";
 import { DashboardIcon, LogoutIcon, ChevronDownIcon } from "../icons";
 import LanguageSwitcher from "./LanguageSwitcher";
+import LocationHeaderControls from "./LocationHeaderControls";
 
 const Header = () => {
   const { t } = useTranslation();
@@ -47,6 +48,7 @@ const Header = () => {
           )}
         </nav>
         <div className="flex shrink-0 items-center gap-2 md:gap-4">
+          <LocationHeaderControls />
           <LanguageSwitcher />
           {!user ? (
             <>

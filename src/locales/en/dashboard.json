@@ -45,7 +45,11 @@
       "newPassword": "New password",
       "confirmPassword": "Confirm new password",
       "saving": "Saving...",
-      "saveAccount": "Save account"
+      "saveAccount": "Save account",
+      "locationTitle": "Your location",
+      "locationHint": "Helps find doctors near you. You can change it anytime.",
+      "locationCity": "City or area",
+      "locationAddress": "Address"
     },
     "patient": {
       "title": "Patient dashboard",
@@ -127,7 +131,11 @@
         "rating": "Rating",
         "serviceFee": "Service fee",
         "bookNow": "Book now",
-        "empty": "No doctors found for the selected category or search."
+        "empty": "No doctors found for the selected category or search.",
+        "nearMe": "Near me",
+        "clearNearMe": "Show all",
+        "nearMeOn": "Showing doctors near your current location.",
+        "distanceAway": "{{km}} km away"
       },
       "history": {
         "title": "Booking history",
@@ -294,6 +302,8 @@
       "yearsUnit": "years",
       "experienceLabel": "Experience",
       "serviceRateLabel": "Service rate",
+      "practiceLocationTitle": "Practice location",
+      "practiceLocationUnset": "No practice address on file. Add one so patients can find you nearby.",
       "bioTitle": "Bio",
       "noBio": "No bio added yet.",
       "bioPlaceholder": "Describe your services and experience for patients...",
