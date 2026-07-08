@@ -23,16 +23,22 @@ const Dropdown = ({ options, value, onChange, placeholder = "Select option", cla
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex w-full h-full items-center border rounded-xl px-3 py-2.5 text-sm outline-none transition-all shadow-sm ${
+        className={`flex h-full w-full items-center justify-between gap-2 border rounded-xl px-3 py-2.5 text-sm outline-none transition-all shadow-sm ${
           isOpen || selectedOption
             ? "border-brand-600 bg-white ring-1 ring-brand-100"
             : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
         }`}
       >
-        <span className={`flex-1 text-center font-bold leading-tight ${selectedOption ? "text-brand-700" : "text-slate-500"}`}>
+        <span
+          className={`min-w-0 flex-1 truncate whitespace-nowrap text-start font-bold ${
+            selectedOption ? "text-brand-700" : "text-slate-500"
+          }`}
+        >
           {displayLabel}
         </span>
-        <ChevronDownIcon className={`h-3.5 w-3.5 shrink-0 opacity-60 transition-transform duration-300 ${isOpen ? "rotate-180" : ""} ${selectedOption ? "text-brand-700" : "text-slate-400"}`} />
+        <ChevronDownIcon
+          className={`h-3.5 w-3.5 shrink-0 opacity-60 transition-transform duration-300 ${isOpen ? "rotate-180" : ""} ${selectedOption ? "text-brand-700" : "text-slate-400"}`}
+        />
       </button>
 
       {isOpen && (

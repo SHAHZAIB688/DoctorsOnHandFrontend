@@ -30,7 +30,7 @@ const Layout = ({ children }) => {
               <div className="space-y-6">
                 <div className="flex items-center gap-2">
                   <img src={LogoImg} alt={t("header.logoAlt")} className="h-10 w-10 rounded-lg" />
-                  <span className="text-xl font-extrabold tracking-tight text-brand-700">Perscripto</span>
+                  <span className="text-xl font-extrabold tracking-tight text-brand-700">DoctorsOnHand</span>
                 </div>
                 <p className="text-sm leading-relaxed text-slate-600">{t("footer.tagline")}</p>
                 <div className="flex gap-4">

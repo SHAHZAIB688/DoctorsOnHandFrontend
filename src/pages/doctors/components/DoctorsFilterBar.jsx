@@ -1,21 +1,15 @@
 import { useTranslation } from "react-i18next";
 import SearchInput from "../../../components/SearchInput";
 import CategoryDropdown from "../../../components/CategoryDropdown";
-import SearchButton from "../../../components/SearchButton";
 import { MapPinIcon, XMarkIcon } from "../../../icons";
 
 const DoctorsFilterBar = ({
   search,
   setSearch,
-  experience,
-  setExperience,
-  availability,
-  setAvailability,
+  specialization,
+  setSpecialization,
   resetFilters,
-  handleSearch,
-  searchLoading,
-  experienceOptions,
-  availabilityOptions,
+  specializationOptions,
   nearByActive,
   onNearMe,
   onClearNear,
@@ -66,19 +60,11 @@ const DoctorsFilterBar = ({
         />
 
         <CategoryDropdown
-          value={experience}
-          onChange={setExperience}
-          options={experienceOptions}
-          placeholder={t("doctors.experiencePh")}
-          className="w-32 rounded-lg bg-white transition-colors hover:border-brand-300"
-        />
-
-        <CategoryDropdown
-          value={availability}
-          onChange={setAvailability}
-          options={availabilityOptions}
-          placeholder={t("doctors.availabilityPh")}
-          className="w-36 rounded-lg bg-white transition-colors hover:border-brand-300"
+          value={specialization}
+          onChange={setSpecialization}
+          options={specializationOptions}
+          placeholder={t("doctors.specializationPh")}
+          className="w-auto min-w-[12.5rem] shrink-0 rounded-lg bg-white transition-colors hover:border-brand-300"
         />
 
         <button
@@ -88,10 +74,6 @@ const DoctorsFilterBar = ({
         >
           {t("doctors.reset")}
         </button>
-
-        <SearchButton onClick={handleSearch} loading={searchLoading} className="px-4">
-          {t("doctors.searchBtn")}
-        </SearchButton>
       </div>
     </section>
   );

@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import patient from "../api/client";
 import Loader from "./Loader";
+import PasswordInput from "./PasswordInput";
+import { coordsToLocationFormFields, reverseGeocodeLocationFields } from "../utils/reverseGeocode";
 
 const AccountProfileForm = ({
   refreshUser,
@@ -47,6 +49,23 @@ const AccountProfileForm = ({
           locationLat: data.locationLat != null && data.locationLat !== "" ? String(data.locationLat) : "",
           locationLng: data.locationLng != null && data.locationLng !== "" ? String(data.locationLng) : "",
         }));
+
+        const hasCoords =
+          data.locationLat != null &&
+          data.locationLng != null &&
+          Number.isFinite(Number(data.locationLat)) &&
+          Number.isFinite(Number(data.locationLng));
+        const missingText = !String(data.locationCity || "").trim() || !String(data.locationAddress || "").trim();
+        if (hasCoords && missingText) {
+          const fields = await reverseGeocodeLocationFields(data.locationLat, data.locationLng);
+          if (!cancelled && fields) {
+            setForm((prev) => ({
+              ...prev,
+              locationCity: prev.locationCity || fields.city,
+              locationAddress: prev.locationAddress || fields.address,
+            }));
+          }
+        }
       } catch {
         toast.error(t("dash.accountForm.loadFail"));
       } finally {
@@ -115,12 +134,13 @@ const AccountProfileForm = ({
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setForm((p) => ({
-          ...p,
-          locationLat: String(pos.coords.latitude),
-          locationLng: String(pos.coords.longitude),
-        }));
+      async (pos) => {
+        const patch = await coordsToLocationFormFields(pos.coords.latitude, pos.coords.longitude);
+        if (!patch) {
+          toast.error(t("auth.geoDenied"));
+          return;
+        }
+        setForm((p) => ({ ...p, ...patch }));
         toast.success(t("auth.geoSuccess"));
       },
       () => toast.error(t("auth.geoDenied"))
@@ -241,9 +261,8 @@ const AccountProfileForm = ({
           <label htmlFor={pid("current-password")} className="mb-1 block text-sm font-medium text-slate-700">
             {t("dash.accountForm.currentPassword")}
           </label>
-          <input
+          <PasswordInput
             id={pid("current-password")}
-            type="password"
             autoComplete="current-password"
             value={form.currentPassword}
             onChange={(e) => setForm((p) => ({ ...p, currentPassword: e.target.value }))}
@@ -254,9 +273,8 @@ const AccountProfileForm = ({
           <label htmlFor={pid("new-password")} className="mb-1 block text-sm font-medium text-slate-700">
             {t("dash.accountForm.newPassword")}
           </label>
-          <input
+          <PasswordInput
             id={pid("new-password")}
-            type="password"
             autoComplete="new-password"
             value={form.newPassword}
             onChange={(e) => setForm((p) => ({ ...p, newPassword: e.target.value }))}
@@ -267,9 +285,8 @@ const AccountProfileForm = ({
           <label htmlFor={pid("confirm-password")} className="mb-1 block text-sm font-medium text-slate-700">
             {t("dash.accountForm.confirmPassword")}
           </label>
-          <input
+          <PasswordInput
             id={pid("confirm-password")}
-            type="password"
             autoComplete="new-password"
             value={form.confirmPassword}
             onChange={(e) => setForm((p) => ({ ...p, confirmPassword: e.target.value }))}

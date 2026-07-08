@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { reverseGeocodePlaceName } from "../utils/reverseGeocode";
 
-const STORAGE_KEY = "perscripto-browser-geo";
+const STORAGE_KEY = "doctorsonhand-browser-geo";
 
 const readStored = () => {
   try {

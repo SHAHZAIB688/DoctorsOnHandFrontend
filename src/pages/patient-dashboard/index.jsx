@@ -8,6 +8,8 @@ import DashboardShell from "../../components/DashboardShell";
 import { DashboardIcon, DoctorIcon, AppointmentIcon, FileIcon, PaymentIcon, SettingsIcon } from "../../components/icons";
 import Loader from "../../components/Loader";
 import { useAuth } from "../../state/AuthContext";
+import { useBrowserLocation } from "../../state/BrowserLocationContext";
+import { parseDoctorsResponse, haversineKm } from "../../utils/doctorsApi";
 import PatientBookingModal from "./components/PatientBookingModal";
 import PatientReviewModal from "./components/PatientReviewModal";
 import PatientDashboardOverviewSection from "./components/PatientDashboardOverviewSection";
@@ -32,6 +34,8 @@ const DEFAULT_HEALTH_SUMMARY = {
   lastCheckup: "",
 };
 
+const DOCTORS_PAGE_SIZE = 10;
+
 const PatientDashboard = () => {
   const { t } = useTranslation();
 
@@ -46,14 +50,20 @@ const PatientDashboard = () => {
   const doctorLabel = useCallback((appointment) => appointment?.doctor?.name || t("dash.patient.yourDoctor"), [t]);
 
   const [doctors, setDoctors] = useState([]);
+  const [doctorsTotal, setDoctorsTotal] = useState(0);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
+  const [loadingMoreDoctors, setLoadingMoreDoctors] = useState(false);
+  const doctorsInitialFetchDone = useRef(false);
   const [appointments, setAppointments] = useState([]);
   const [doctorFilter, setDoctorFilter] = useState({
     search: "",
     specialization: "all",
+    condition: "",
     nearMe: false,
     nearLat: null,
     nearLng: null,
   });
+  const [matchMeta, setMatchMeta] = useState({ matchedSpecializations: [], autoMatched: false });
   const doctorFilterRef = useRef(doctorFilter);
   const [form, setForm] = useState({ doctorProfileId: "", date: "", timeSlot: "", reason: "" });
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -68,23 +78,60 @@ const PatientDashboard = () => {
   const prevAppointmentsRef = useRef([]);
   const location = useLocation();
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { refreshUser, user } = useAuth();
+  const geo = useBrowserLocation();
 
   useEffect(() => {
     doctorFilterRef.current = doctorFilter;
   }, [doctorFilter]);
 
-  const fetchDoctors = useCallback(async () => {
-    const f = doctorFilterRef.current;
-    const params = {};
-    if (f.nearMe && f.nearLat != null && f.nearLng != null) {
-      params.lat = f.nearLat;
-      params.lng = f.nearLng;
-      params.radiusKm = 100;
-    }
-    const { data } = await patient.get("/doctors", { params });
-    setDoctors(data);
-  }, []);
+  const buildDoctorParams = useCallback(
+    (skip = 0) => {
+      const f = doctorFilterRef.current;
+      const params = { limit: DOCTORS_PAGE_SIZE, skip };
+      const conditionText = String(f.condition || "").trim();
+      if (conditionText) params.condition = conditionText;
+      if (f.nearMe && f.nearLat != null && f.nearLng != null) {
+        params.lat = f.nearLat;
+        params.lng = f.nearLng;
+        params.radiusKm = 100;
+      } else if (conditionText && user?.locationLat != null && user?.locationLng != null) {
+        params.lat = user.locationLat;
+        params.lng = user.locationLng;
+        params.radiusKm = 100;
+      }
+      return params;
+    },
+    [user?.locationLat, user?.locationLng]
+  );
+
+  const fetchDoctors = useCallback(
+    async ({ skip = 0, append = false, withLoader = true } = {}) => {
+      if (withLoader && !append) setDoctorsLoading(true);
+      if (append) setLoadingMoreDoctors(true);
+      try {
+        const { data } = await patient.get("/doctors", { params: buildDoctorParams(skip) });
+        const parsed = parseDoctorsResponse(data);
+        setDoctors((prev) => (append ? [...prev, ...parsed.doctors] : parsed.doctors));
+        setDoctorsTotal(parsed.total);
+        setMatchMeta({
+          matchedSpecializations: parsed.matchedSpecializations,
+          autoMatched: parsed.autoMatched,
+        });
+      } catch {
+        if (!append) toast.error(t("dash.patient.doctors.loadError"));
+      } finally {
+        if (withLoader && !append) setDoctorsLoading(false);
+        if (append) setLoadingMoreDoctors(false);
+      }
+    },
+    [buildDoctorParams, t]
+  );
+
+  const loadMoreDoctors = useCallback(() => {
+    if (loadingMoreDoctors || doctors.length >= doctorsTotal) return;
+    void fetchDoctors({ skip: doctors.length, append: true, withLoader: false });
+  }, [doctors.length, doctorsTotal, fetchDoctors, loadingMoreDoctors]);
 
   const fetchHealthSummary = async () => {
     try {
@@ -96,6 +143,9 @@ const PatientDashboard = () => {
         chronicDiseases: summary.chronicDiseases || "",
         lastCheckup: summary.lastCheckup || "",
       });
+      if (summary.chronicDiseases && !doctorFilterRef.current.condition) {
+        setDoctorFilter((p) => ({ ...p, condition: summary.chronicDiseases }));
+      }
     } catch (error) {
       toast.error(i18n.t("dash.patient.toast.loadSummaryFail"));
     }
@@ -130,20 +180,18 @@ const PatientDashboard = () => {
   };
 
   useEffect(() => {
-    fetchDoctors();
-  }, [fetchDoctors, doctorFilter.nearMe, doctorFilter.nearLat, doctorFilter.nearLng]);
+    if (doctorsInitialFetchDone.current) return;
+    doctorsInitialFetchDone.current = true;
+    void fetchDoctors({ skip: 0, append: false });
+  }, [fetchDoctors]);
 
   useEffect(() => {
     fetchAppointments();
     fetchHealthSummary();
 
     const appointmentIntervalId = setInterval(fetchAppointments, 10000);
-    const doctorIntervalId = setInterval(fetchDoctors, 30000);
-    return () => {
-      clearInterval(appointmentIntervalId);
-      clearInterval(doctorIntervalId);
-    };
-  }, [fetchDoctors]);
+    return () => clearInterval(appointmentIntervalId);
+  }, []);
 
   useEffect(() => {
     const verifyPaymentOnReturn = async () => {
@@ -416,7 +464,7 @@ const PatientDashboard = () => {
 
   const filteredDoctors = useMemo(() => {
     const searchText = doctorFilter.search.trim().toLowerCase();
-    return doctors.filter((d) => {
+    let result = doctors.filter((d) => {
       const matchesCategory = doctorFilter.specialization === "all" || d.specialization === doctorFilter.specialization;
       const matchesSearch =
         !searchText ||
@@ -424,6 +472,25 @@ const PatientDashboard = () => {
         d.specialization?.toLowerCase().includes(searchText);
       return matchesCategory && matchesSearch;
     });
+
+    if (doctorFilter.nearMe && doctorFilter.nearLat != null && doctorFilter.nearLng != null) {
+      result = result
+        .map((d) => {
+          const lat = d.locationLat;
+          const lng = d.locationLng;
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            return { ...d, distanceKm: null };
+          }
+          return {
+            ...d,
+            distanceKm: haversineKm(doctorFilter.nearLat, doctorFilter.nearLng, lat, lng),
+          };
+        })
+        .filter((d) => d.distanceKm == null || d.distanceKm <= 100)
+        .sort((a, b) => (a.distanceKm ?? 9999) - (b.distanceKm ?? 9999));
+    }
+
+    return result;
   }, [doctors, doctorFilter]);
 
   if (initialLoading) {
@@ -485,9 +552,42 @@ const PatientDashboard = () => {
                 setDoctorFilter={setDoctorFilter}
                 doctorCategories={doctorCategories}
                 filteredDoctors={filteredDoctors}
-                formatServiceFee={formatServiceFee}
+                doctorsLoading={doctorsLoading}
+                loadingMoreDoctors={loadingMoreDoctors}
+                hasMoreDoctors={doctors.length < doctorsTotal}
+                doctorsLoadedCount={doctors.length}
+                doctorsTotal={doctorsTotal}
+                onLoadMoreDoctors={loadMoreDoctors}
+                matchMeta={matchMeta}
                 setForm={setForm}
                 setBookingModalOpen={setBookingModalOpen}
+                onFindBestDoctor={async () => {
+                  let lat = doctorFilter.nearLat ?? user?.locationLat ?? geo.lat;
+                  let lng = doctorFilter.nearLng ?? user?.locationLng ?? geo.lng;
+                  if (lat == null || lng == null) {
+                    const loc = await geo.requestLocation();
+                    if (!loc) {
+                      toast.error(!navigator.geolocation ? t("auth.geoNotSupported") : t("auth.geoDenied"));
+                      return;
+                    }
+                    lat = loc.lat;
+                    lng = loc.lng;
+                  }
+                  if (!String(doctorFilter.condition || "").trim()) {
+                    toast.error(t("dash.patient.doctors.conditionRequired"));
+                    return;
+                  }
+                  const nextFilter = {
+                    ...doctorFilterRef.current,
+                    nearMe: true,
+                    nearLat: lat,
+                    nearLng: lng,
+                  };
+                  doctorFilterRef.current = nextFilter;
+                  setDoctorFilter(nextFilter);
+                  toast.success(t("dash.patient.doctors.matchSearching"));
+                  await fetchDoctors({ skip: 0, append: false });
+                }}
               />
             )}
 

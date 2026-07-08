@@ -111,12 +111,48 @@ const DoctorDetailsPage = () => {
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Reviews</p>
                 <p className="mt-1 text-sm font-bold text-slate-800">{doctor.numReviews || 0}</p>
               </div>
+              {doctor.qualification && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Qualifications</p>
+                  <p className="mt-1 text-sm font-bold text-slate-800">{doctor.qualification}</p>
+                </div>
+              )}
+              {(doctor.locationCity || doctor.locationAddress) && (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Clinic Location</p>
+                  <p className="mt-1 text-sm font-bold text-slate-800">
+                    {[doctor.locationCity, doctor.locationAddress].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+              )}
+              {doctor.pmdcVerified && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 sm:col-span-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">PMDC Verified</p>
+                  <p className="mt-1 text-sm font-bold text-emerald-800">{doctor.pmdcId || "Verified practitioner"}</p>
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl border border-slate-200 p-4">
               <h3 className="text-sm font-bold text-slate-900">About Doctor</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-600">{doctor.bio || "No bio provided yet."}</p>
             </div>
+
+            {Array.isArray(doctor.services) && doctor.services.length > 0 && (
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <h3 className="text-sm font-bold text-slate-900">Services Offered</h3>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {doctor.services.map((service) => (
+                    <span
+                      key={service}
+                      className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700"
+                    >
+                      {service}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-wrap gap-3">
               <button

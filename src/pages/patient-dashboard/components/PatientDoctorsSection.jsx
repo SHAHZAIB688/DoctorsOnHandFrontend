@@ -1,18 +1,26 @@
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
-import { buildBackendAssetUrl } from "../../../api/client";
 import Dropdown from "../../../components/Dropdown";
+import Loader from "../../../components/Loader";
 import { MapPinIcon, XMarkIcon } from "../../../icons";
 import { useBrowserLocation } from "../../../state/BrowserLocationContext";
+import DoctorListCard from "../../doctors/components/DoctorListCard";
 
 const PatientDoctorsSection = ({
   doctorFilter,
   setDoctorFilter,
   doctorCategories,
   filteredDoctors,
-  formatServiceFee,
+  doctorsLoading,
+  loadingMoreDoctors,
+  hasMoreDoctors,
+  doctorsLoadedCount,
+  doctorsTotal,
+  onLoadMoreDoctors,
+  matchMeta,
   setForm,
   setBookingModalOpen,
+  onFindBestDoctor,
 }) => {
   const { t } = useTranslation();
   const geo = useBrowserLocation();
@@ -46,6 +54,35 @@ const PatientDoctorsSection = ({
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
       <h3 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{t("dash.patient.doctors.title")}</h3>
       <p className="mt-1 text-sm text-slate-600">{t("dash.patient.doctors.subtitle")}</p>
+
+      <div className="mt-4 rounded-xl border border-brand-100 bg-brand-50/50 p-4">
+        <label className="mb-1 block text-sm font-semibold text-slate-800">{t("dash.patient.doctors.conditionLabel")}</label>
+        <p className="mb-2 text-xs text-slate-500">{t("dash.patient.doctors.conditionHint")}</p>
+        <textarea
+          rows={2}
+          value={doctorFilter.condition}
+          onChange={(e) => setDoctorFilter((p) => ({ ...p, condition: e.target.value }))}
+          placeholder={t("dash.patient.doctors.conditionPh")}
+          className="w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
+        />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => void onFindBestDoctor?.()}
+            className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+          >
+            {t("dash.patient.doctors.findBest")}
+          </button>
+          {matchMeta?.autoMatched && matchMeta.matchedSpecializations?.length > 0 && (
+            <p className="self-center text-xs text-brand-800">
+              {t("dash.patient.doctors.matchedSpecs", {
+                specs: matchMeta.matchedSpecializations.slice(0, 3).join(", "),
+              })}
+            </p>
+          )}
+        </div>
+      </div>
+
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-nowrap sm:items-center">
         <Dropdown
           options={doctorCategories.map((category) => ({
@@ -54,7 +91,7 @@ const PatientDoctorsSection = ({
           }))}
           value={doctorFilter.specialization}
           onChange={(val) => setDoctorFilter((p) => ({ ...p, specialization: val }))}
-          className="h-10 w-full shrink-0 sm:w-52"
+          className="h-10 w-auto min-w-[12.5rem] shrink-0 sm:w-52"
         />
         <input
           placeholder={t("dash.patient.doctors.searchPh")}
@@ -89,55 +126,60 @@ const PatientDoctorsSection = ({
           )}
         </div>
       </div>
-      <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        {filteredDoctors.map((doctor) => (
-          <article key={doctor._id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-            <img
-              src={
-                doctor.image
-                  ? buildBackendAssetUrl(doctor.image)
-                  : `https://api.dicebear.com/8.x/initials/svg?seed=${encodeURIComponent(doctor.user?.name || t("dash.patient.unnamedDoctor"))}`
-              }
-              alt={doctor.user?.name || t("dash.patient.unnamedDoctor")}
-              className="h-44 w-full rounded-xl bg-slate-100 object-cover"
-            />
-            <h3 className="mt-4 text-lg font-bold text-slate-900">{doctor.user?.name}</h3>
-            <p className="text-sm text-brand-700">{doctor.specialization}</p>
-            <div className="mt-3 space-y-1 text-sm text-slate-600">
-              <p>
-                {t("dash.patient.doctors.experience")}: {t("dash.patient.doctors.yearsPlus", { n: doctor.experienceYears || 5 })}
-              </p>
-              <p>
-                {t("dash.patient.doctors.rating")}: 4.8 / 5.0
-              </p>
-              <p className="font-semibold text-brand-600">
-                {t("dash.patient.doctors.serviceFee")}: {formatServiceFee(doctor.consultationFee)}
-              </p>
-              {doctor.distanceKm != null && (
-                <p className="text-sm text-slate-500">
-                  {t("dash.patient.doctors.distanceAway", { km: doctor.distanceKm })}
-                </p>
-              )}
-              {(doctor.locationCity || doctor.locationAddress) && (
-                <p className="text-xs text-slate-500">
-                  {[doctor.locationCity, doctor.locationAddress].filter(Boolean).join(" · ")}
-                </p>
-              )}
+
+      <div className="mt-6">
+        {doctorsLoading ? (
+          <div className="flex h-56 flex-col items-center justify-center gap-3 rounded-xl border border-slate-200 bg-slate-50/50">
+            <Loader />
+            <p className="text-sm font-medium text-slate-500">{t("dash.patient.doctors.fetching")}</p>
+          </div>
+        ) : filteredDoctors.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-sm text-slate-500">
+            {t("dash.patient.doctors.empty")}
+          </p>
+        ) : (
+          <>
+            <div className="space-y-4">
+              {filteredDoctors.map((doctor) => (
+                <DoctorListCard
+                  key={doctor._id}
+                  doctor={doctor}
+                  onBook={() => {
+                    setForm((p) => ({ ...p, doctorProfileId: doctor._id }));
+                    setBookingModalOpen(true);
+                  }}
+                  onVideoConsult={() => {
+                    setForm((p) => ({ ...p, doctorProfileId: doctor._id }));
+                    setBookingModalOpen(true);
+                  }}
+                />
+              ))}
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                setForm((p) => ({ ...p, doctorProfileId: doctor._id }));
-                setBookingModalOpen(true);
-              }}
-              className="mt-4 inline-block w-full rounded-xl bg-brand-600 px-4 py-2 text-center text-sm font-semibold text-white hover:bg-brand-700"
-            >
-              {t("dash.patient.doctors.bookNow")}
-            </button>
-          </article>
-        ))}
-        {filteredDoctors.length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-200 p-4 text-sm text-slate-500 sm:col-span-2 xl:col-span-3">{t("dash.patient.doctors.empty")}</p>
+
+            {hasMoreDoctors && (
+              <div className="mt-4 flex justify-center">
+                <button
+                  type="button"
+                  onClick={onLoadMoreDoctors}
+                  disabled={loadingMoreDoctors}
+                  className="flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-8 py-3 text-sm font-semibold text-brand-700 shadow-sm transition hover:border-brand-400 hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loadingMoreDoctors
+                    ? t("dash.patient.doctors.loadingMore")
+                    : t("dash.patient.doctors.loadMore", {
+                        count: Math.max(0, doctorsTotal - doctorsLoadedCount),
+                      })}
+                </button>
+              </div>
+            )}
+
+            <p className="mt-3 text-center text-xs text-slate-500">
+              {t("dash.patient.doctors.showingCount", {
+                shown: filteredDoctors.length,
+                total: doctorsLoadedCount,
+              })}
+            </p>
+          </>
         )}
       </div>
     </section>

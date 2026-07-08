@@ -20,7 +20,7 @@
     "joinNow": "Join Now"
   },
   "header": {
-    "logoAlt": "Perscripto Logo",
+    "logoAlt": "DoctorsOnHand Logo",
     "account": "Account",
     "userAccount": "User Account",
     "logout": "Logout",
@@ -37,7 +37,7 @@
     "aboutUs": "About Us",
     "termsOfService": "Terms of Service",
     "contactSupport": "Contact Support",
-    "rights": "© 2026 Perscripto. All rights reserved.",
+    "rights": "© 2026 DoctorsOnHand. All rights reserved.",
     "terms": "Terms",
     "privacy": "Privacy",
     "cookies": "Cookies",
@@ -48,7 +48,7 @@
   "home": {
     "heroBadge": "Trusted Healthcare Network",
     "heroTitle": "Book Trusted Doctors in Minutes",
-    "heroSubtitle": "Find experienced doctors, book appointments in seconds, and stay updated with secure reminders and notifications.",
+    "heroSubtitle": "Describe your condition once — DoctorsOnHand finds the most suitable specialist nearest to you. No more visiting doctor after doctor.",
     "findDoctors": "Find Doctors",
     "bookAppointment": "Book Appointment",
     "heroImgAlt": "Doctor consultation",
@@ -56,7 +56,7 @@
     "searchDoctors": "Search Doctors",
     "topSpecsTitle": "Top Specialities",
     "topSpecsSubtitle": "Explore common medical specialities quickly.",
-    "whyTitle": "Why Patients Choose Perscripto",
+    "whyTitle": "Why Patients Choose DoctorsOnHand",
     "whySubtitle": "Trusted platform for fast and secure doctor bookings.",
     "whyHighlight": "Highlighted Benefit",
     "whyClickHint": "Click to highlight",
@@ -71,11 +71,11 @@
     "startingRate": "Starting Rate",
     "viewDetails": "View Details",
     "testimonialsTitle": "What Our Patients Say",
-    "testimonialsSubtitle": "Real stories from people who have experienced a better way to hire skilled doctors with Perscripto.",
+    "testimonialsSubtitle": "Real stories from people who have experienced a better way to hire skilled doctors with DoctorsOnHand.",
     "faqTitle": "FAQ",
     "faqSubtitle": "Answers to common patient questions.",
     "ctaTitle": "Ready to Book Your Next Service?",
-    "ctaSubtitle": "Join Perscripto and connect with trusted doctors in minutes.",
+    "ctaSubtitle": "Join DoctorsOnHand and connect with trusted doctors in minutes.",
     "browseDoctors": "Browse Doctors",
     "createAccount": "Create Account",
     "loadDoctorsError": "Unable to load featured doctors",
@@ -103,7 +103,7 @@
         "a": "Go to Doctors, open a doctor detail page, choose date/time slot, and confirm booking."
       },
       {
-        "q": "Are doctors verified on Perscripto?",
+        "q": "Are doctors verified on DoctorsOnHand?",
         "a": "Yes, listed doctors are verified before they become available for patient bookings."
       },
       {
@@ -119,7 +119,7 @@
       {
         "name": "Ali Raza",
         "role": "Patient",
-        "content": "Perscripto made booking doctor appointments very easy. Doctors are punctual and consultations are professional."
+        "content": "DoctorsOnHand made booking doctor appointments very easy. Doctors are punctual and consultations are professional."
       },
       {
         "name": "Fatima Ahmed",
@@ -183,12 +183,14 @@
     "careFirst": "Care First, On Time",
     "startJourneyLine1": "Start your",
     "startJourneyLine2": "journey",
-    "brandSubtitle": "Join thousands of doctors and patients who trust Perscripto for reliable appointment bookings.",
+    "brandSubtitle": "Join thousands of doctors and patients who trust DoctorsOnHand for reliable appointment bookings.",
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "emailPlaceholder": "Enter your email",
     "passwordPlaceholder": "Enter your Password",
     "choosePassword": "Choose Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "signInBtn": "Sign In",
     "registerBtn": "Register",
     "notMember": "Not a member?",
@@ -208,8 +210,8 @@
     "continueGoogle": "Continue with Google",
     "connecting": "Connecting…",
     "googlePatientOnly": "Google sign-up is for patients only. Please complete the doctor registration above.",
-    "welcomeBack": "Welcome back to Perscripto",
-    "welcome": "Welcome to Perscripto",
+    "welcomeBack": "Welcome back to DoctorsOnHand",
+    "welcome": "Welcome to DoctorsOnHand",
     "authFailed": "Authentication failed",
     "registrationFailed": "Registration failed",
     "termsRequired": "Please agree to the Terms and Conditions",
@@ -228,16 +230,16 @@
     "geoSuccess": "Location saved from your device.",
     "geoDenied": "Could not read your location. Check browser permissions.",
     "verificationTitle": "Account Under Verification",
-    "verificationBody": "Thank you for joining Perscripto! Your professional credentials have been submitted for review.",
+    "verificationBody": "Thank you for joining DoctorsOnHand! Your professional credentials have been submitted for review.",
     "verificationWait": "Please wait for admin approval (usually 24-48 hours) before you can access your doctor dashboard.",
     "goToLogin": "Go to Login"
   },
   "about": {
-    "heroTitle": "About Perscripto",
-    "heroLead": "Perscripto is an innovative online healthcare platform designed to simplify how people find trusted doctors. We bridge the gap between patients and medical professionals with technology.",
+    "heroTitle": "About DoctorsOnHand",
+    "heroLead": "DoctorsOnHand is an innovative online healthcare platform designed to simplify how people find trusted doctors. We bridge the gap between patients and medical professionals with technology.",
     "journeyTitle": "Our Journey",
-    "journeyP1": "In today’s fast-paced world, finding the right doctor and booking a consultation can often be time-consuming and stressful. Perscripto aims to eliminate these challenges by providing a seamless, reliable, and user-friendly solution for patients and doctors.",
-    "journeyP2": "Our platform allows patients to easily search for qualified doctors, explore specializations, view availability, and book appointments in just a few clicks. Whether it is a routine check-up or specialist consultation, Perscripto keeps quality healthcare within your reach.",
+    "journeyP1": "In today’s fast-paced world, finding the right doctor and booking a consultation can often be time-consuming and stressful. DoctorsOnHand aims to eliminate these challenges by providing a seamless, reliable, and user-friendly solution for patients and doctors.",
+    "journeyP2": "Our platform allows patients to easily search for qualified doctors, explore specializations, view availability, and book appointments in just a few clicks. Whether it is a routine check-up or specialist consultation, DoctorsOnHand keeps quality healthcare within your reach.",
     "journeyP3": "We are committed to maintaining high standards of quality and trust. Every doctor on our platform goes through a verification process to ensure patients receive reliable care from experienced and certified professionals.",
     "offerTitle": "What We Offer",
     "visionTitle": "Our Vision",
@@ -258,10 +260,10 @@
   "contact": {
     "badge": "Get In Touch",
     "title": "Contact Us",
-    "lead": "Have questions about Perscripto? Our team is here to help with appointments and account support.",
+    "lead": "Have questions about DoctorsOnHand? Our team is here to help with appointments and account support.",
     "helpTitle": "How can we help?",
     "helpText": "Whether you are a patient looking for a trusted doctor or a professional interested in joining our platform, we are ready to assist you.",
-    "mapTitle": "Perscripto Location",
+    "mapTitle": "DoctorsOnHand Location",
     "formTitle": "Send us a Message",
     "fullName": "Full Name",
     "email": "Email Address",
@@ -282,10 +284,20 @@
   },
   "doctors": {
     "pageTitle": "Find the Right Doctor",
-    "pageSubtitle": "Search through our verified network of skilled professionals.",
+    "pageSubtitle": "Describe your condition — DoctorsOnHand finds the most suitable specialist nearest to you.",
+    "conditionLabel": "Your condition or symptoms",
+    "conditionHint": "No need to visit doctor after doctor. Enter your disease or symptoms and we match the best expert nearby.",
+    "conditionPh": "e.g. chest pain, skin allergy, child fever, diabetes...",
+    "findBest": "Find best specialist near me",
+    "conditionRequired": "Please describe your condition or symptoms first.",
+    "matchSearching": "Finding the best matching doctors near you...",
+    "matchedSpecs": "Matched specialists: {{specs}}",
+    "bestMatch": "Best match",
     "searchPlaceholder": "Search by name, skill, or service...",
-    "experiencePh": "Experience",
-    "availabilityPh": "Availability",
+    "specializationPh": "Specialization",
+    "loadMore": "Load more doctors ({{count}} remaining)",
+    "loadingMore": "Loading more...",
+    "showingCount": "Showing {{shown}} of {{total}} loaded doctors",
     "reset": "Reset",
     "searchBtn": "Search",
     "nearMeTooltip": "Show doctors near your current location",
@@ -300,6 +312,9 @@
       "range05": "0–5 years",
       "range610": "6–10 years",
       "range10": "10+ years"
+    },
+    "spec": {
+      "all": "All specializations"
     },
     "avail": {
       "all": "All",
@@ -326,14 +341,14 @@
   "terms": {
     "badge": "Legal Documentation",
     "title": "Terms and Conditions",
-    "subtitle": "Please read these terms carefully before using our platform. By accessing Perscripto, you agree to be bound by these legal guidelines.",
+    "subtitle": "Please read these terms carefully before using our platform. By accessing DoctorsOnHand, you agree to be bound by these legal guidelines.",
     "sidebarNote": "Detailed clauses below are provided in English for legal accuracy.",
     "quickNav": "Quick Navigation",
     "needHelp": "Need help?",
     "support247": "Our support team is here for you 24/7.",
     "contactSupportLink": "Contact Support",
     "acceptanceTitle": "Acceptance of Terms",
-    "acceptanceBody": "By continuing to use Perscripto, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.",
+    "acceptanceBody": "By continuing to use DoctorsOnHand, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.",
     "lastUpdated": "Last Updated: April 26, 2026"
   }
 }

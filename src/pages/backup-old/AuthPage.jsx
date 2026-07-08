@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../../state/AuthContext";
 import LogoImg from "../../assets/logo2.jpeg";
 import AuthBrandPanel from "../auth/components/AuthBrandPanel";
+import PasswordInput from "../../components/PasswordInput";
 
 const initialForm = {
   name: "",
@@ -51,9 +52,9 @@ const AuthPage = () => {
       if (mode === "login") await login({ email: form.email, password: form.password });
       else {
         await register(form);
-        toast.success(form.role === "doctor" ? "Application submitted for verification" : "Welcome to Prescripto");
+        toast.success(form.role === "doctor" ? "Application submitted for verification" : "Welcome to DoctorsOnHand");
       }
-      if (mode === "login") toast.success("Welcome back to Prescripto");
+      if (mode === "login") toast.success("Welcome back to DoctorsOnHand");
       navigate("/dashboard");
     } catch (error) {
       toast.error(error.response?.data?.message || "Authentication failed");
@@ -114,12 +115,12 @@ const AuthPage = () => {
             </div>
 
             <div className="relative">
-              <input
+              <PasswordInput
                 name="password"
-                type="password"
                 placeholder="Choose Password"
                 onChange={onChange}
                 required
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
                 className="w-full border-b border-slate-200 py-3 text-sm outline-none transition-colors focus:border-brand-600"
               />
             </div>

@@ -25,7 +25,7 @@ const Header = () => {
         <div className="flex min-w-0 items-center gap-2">
           <img src={LogoImg} alt={t("header.logoAlt")} className="h-10 w-10 shrink-0 rounded-lg" />
           <Link to="/" className="truncate text-xl font-extrabold tracking-tight text-brand-700">
-            Perscripto
+            DoctorsOnHand
           </Link>
         </div>
         <nav className="hidden items-center gap-7 md:flex">

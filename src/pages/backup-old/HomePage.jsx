@@ -27,7 +27,7 @@ const FAQ_ITEMS = [
     a: "Go to Doctors, open a doctor's detail page, choose date/time slot, and confirm booking.",
   },
   {
-    q: "Are doctors verified on Prescripto?",
+    q: "Are doctors verified on DoctorsOnHand?",
     a: "Yes, listed doctors are verified before they become available for patient booking.",
   },
   {
@@ -219,7 +219,7 @@ const HomePage = () => {
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">What Our Patients Say</h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-600">
-            Real stories from people who have experienced a better way to manage their healthcare with Prescripto.
+            Real stories from people who have experienced a better way to manage their healthcare with DoctorsOnHand.
           </p>
         </div>
         <div className="relative overflow-hidden before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-20 before:bg-gradient-to-r before:from-slate-50 before:to-transparent after:absolute after:right-0 after:top-0 after:z-10 after:h-full after:w-20 after:bg-gradient-to-l after:from-slate-50 after:to-transparent">
@@ -231,7 +231,7 @@ const HomePage = () => {
                     "name": "Ali Raza",
                     "role": "Patient",
                     "image": "https://randomuser.me/api/portraits/men/32.jpg",
-                    "content": "Prescripto ne meri appointments manage karna bohat easy bana diya hai. Ab line mein wait nahi karna parta aur doctors bhi bohat professional hain.",
+                    "content": "DoctorsOnHand ne meri appointments manage karna bohat easy bana diya hai. Ab line mein wait nahi karna parta aur doctors bhi bohat professional hain.",
                     "rating": 5
                   },
                   {
@@ -325,7 +325,7 @@ const HomePage = () => {
       <section className="rounded-3xl bg-gradient-to-r from-brand-700 via-brand-600 to-cyan-600 px-6 py-10 text-center text-white shadow-xl md:px-10">
         <h2 className="text-2xl font-bold md:text-3xl">Ready to Book Your Next Consultation?</h2>
         <p className="mt-2 text-sm text-cyan-50 md:text-base">
-          Join Prescripto and connect with trusted doctors in minutes.
+          Join DoctorsOnHand and connect with trusted doctors in minutes.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link to="/doctors" className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand-700 hover:bg-cyan-50">

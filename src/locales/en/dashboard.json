@@ -25,7 +25,7 @@
     },
     "sidebar": {
       "logout": "Logout",
-      "logoAlt": "Perscripto logo"
+      "logoAlt": "DoctorsOnHand logo"
     },
     "accountForm": {
       "sectionTitle": "Account",
@@ -123,7 +123,7 @@
       },
       "doctors": {
         "title": "Find doctors",
-        "subtitle": "Browse verified doctors and book a service slot.",
+        "subtitle": "Describe your condition — we find the most suitable specialist nearest to you.",
         "allCategories": "All categories",
         "searchPh": "Search doctor or category...",
         "experience": "Experience",
@@ -132,10 +132,25 @@
         "serviceFee": "Service fee",
         "bookNow": "Book now",
         "empty": "No doctors found for the selected category or search.",
+        "fetching": "Loading doctors...",
+        "loadError": "Unable to load doctors. Please try again.",
+        "loadMore": "Load more doctors ({{count}} remaining)",
+        "loadingMore": "Loading more...",
+        "showingCount": "Showing {{shown}} of {{total}} loaded doctors",
         "nearMe": "Near me",
         "clearNearMe": "Show all",
         "nearMeOn": "Showing doctors near your current location.",
-        "distanceAway": "{{km}} km away"
+        "distanceAway": "{{km}} km away",
+        "conditionLabel": "Your condition or symptoms",
+        "conditionHint": "Tell us what you need treated. DoctorsOnHand will match the best specialist near you automatically.",
+        "conditionPh": "e.g. chest pain, skin rash, diabetes follow-up, child fever...",
+        "findBest": "Find best specialist near me",
+        "conditionRequired": "Please describe your condition or symptoms first.",
+        "matchSearching": "Finding the best matching doctors near you...",
+        "matchedSpecs": "Matched specialists: {{specs}}",
+        "bestMatch": "Best match",
+        "matchScore": "Match score: {{score}}",
+        "bookRecommended": "Book recommended doctor"
       },
       "history": {
         "title": "Booking history",

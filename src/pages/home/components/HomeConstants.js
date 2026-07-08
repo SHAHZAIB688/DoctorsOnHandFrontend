@@ -38,6 +38,9 @@ export const DOCTOR_SIGNUP_SPECIALIZATIONS = [
   "Radiologist",
   "Anesthesiologist",
   "General Surgeon",
+  "Dentist",
+  "Hematologist",
+  "Infectious Disease Specialist",
 ];
 
 export const HOW_IT_WORKS_STEPS = [
@@ -53,7 +56,7 @@ export const FAQ_ITEMS = [
     a: "Go to Doctors, open a doctor detail page, choose date/time slot, and confirm booking.",
   },
   {
-    q: "Are doctors verified on Perscripto?",
+    q: "Are doctors verified on DoctorsOnHand?",
     a: "Yes, listed doctors are verified before they become available for patient bookings.",
   },
   {
@@ -72,7 +75,7 @@ export const TESTIMONIALS = [
     role: "Patient",
     image: "https://randomuser.me/api/portraits/men/32.jpg",
     content:
-      "Perscripto ne doctor appointments book karna bohat easy bana diya hai. Doctors time par available hote hain aur consultation professional hoti hai.",
+      "DoctorsOnHand ne doctor appointments book karna bohat easy bana diya hai. Doctors time par available hote hain aur consultation professional hoti hai.",
     rating: 5,
   },
   {

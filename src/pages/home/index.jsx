@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import patient from "../../api/client";
+import { parseDoctorsResponse } from "../../utils/doctorsApi";
 import WhyChooseUsSection from "../../components/WhyChooseUsSection";
 import HeroSection from "./components/HeroSection";
 
@@ -70,7 +71,7 @@ const HomePage = () => {
     const fetchDoctors = async () => {
       try {
         const { data } = await patient.get("/doctors");
-        setDoctors(Array.isArray(data) ? data : []);
+        setDoctors(parseDoctorsResponse(data).doctors);
       } catch {
         toast.error(t("home.loadDoctorsError"));
       } finally {

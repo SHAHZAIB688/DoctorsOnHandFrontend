@@ -8,7 +8,7 @@ import urDash from "../locales/ur/dashboard.json";
 const enMerged = { ...en, ...enDash };
 const urMerged = { ...ur, ...urDash };
 
-export const LANG_STORAGE_KEY = "perscripto-lang";
+export const LANG_STORAGE_KEY = "doctorsonhand-lang";
 
 export function syncDocumentLang(lng) {
   const isUr = lng === "ur";

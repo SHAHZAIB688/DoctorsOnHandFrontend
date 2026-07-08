@@ -6,6 +6,7 @@ import LogoImg from "../../assets/logo2.jpeg";
 import { useAuth } from "../../state/AuthContext";
 import AuthBrandPanel from "../auth/components/AuthBrandPanel";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
+import PasswordInput from "../../components/PasswordInput";
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -66,12 +67,12 @@ const LoginPage = () => {
             </div>
 
             <div className="relative">
-              <input
+              <PasswordInput
                 name="password"
-                type="password"
                 placeholder={t("auth.passwordPlaceholder")}
                 onChange={onChange}
                 required
+                autoComplete="current-password"
                 className="w-full border-b border-slate-200 py-3 text-sm outline-none transition-colors focus:border-brand-600"
               />
             </div>

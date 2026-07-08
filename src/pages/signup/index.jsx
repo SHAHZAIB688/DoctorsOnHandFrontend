@@ -11,7 +11,9 @@ import VerificationModal from "../../components/VerificationModal";
 import Dropdown from "../../components/Dropdown";
 import AuthBrandPanel from "../auth/components/AuthBrandPanel";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
+import PasswordInput from "../../components/PasswordInput";
 import { DOCTOR_SIGNUP_SPECIALIZATIONS } from "../home/components/HomeConstants";
+import { coordsToLocationFormFields } from "../../utils/reverseGeocode";
 
 const SignupPage = () => {
   const { t, i18n } = useTranslation();
@@ -105,11 +107,18 @@ const SignupPage = () => {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
+        const patch = await coordsToLocationFormFields(pos.coords.latitude, pos.coords.longitude);
+        if (!patch) {
+          toast.error(t("auth.geoDenied"));
+          return;
+        }
         setForm((p) => ({
           ...p,
-          locationLat: pos.coords.latitude,
-          locationLng: pos.coords.longitude,
+          locationCity: patch.locationCity,
+          locationAddress: patch.locationAddress,
+          locationLat: patch.locationLat,
+          locationLng: patch.locationLng,
         }));
         toast.success(t("auth.geoSuccess"));
       },
@@ -216,12 +225,12 @@ const SignupPage = () => {
               className="w-full border-b border-slate-200 py-2 text-sm outline-none transition-colors focus:border-brand-600 sm:py-3"
             />
 
-            <input
+            <PasswordInput
               name="password"
-              type="password"
               placeholder={t("auth.choosePassword")}
               onChange={onChange}
               required
+              autoComplete="new-password"
               className="w-full border-b border-slate-200 py-2 text-sm outline-none transition-colors focus:border-brand-600 sm:py-3"
             />
 
