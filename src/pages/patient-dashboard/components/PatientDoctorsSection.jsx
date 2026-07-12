@@ -17,6 +17,7 @@ const PatientDoctorsSection = ({
   doctorsLoadedCount,
   doctorsTotal,
   onLoadMoreDoctors,
+  onSearchDoctors,
   matchMeta,
   setForm,
   setBookingModalOpen,
@@ -97,8 +98,21 @@ const PatientDoctorsSection = ({
           placeholder={t("dash.patient.doctors.searchPh")}
           value={doctorFilter.search}
           onChange={(e) => setDoctorFilter((p) => ({ ...p, search: e.target.value }))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void onSearchDoctors?.();
+            }
+          }}
           className="h-10 min-w-0 w-full flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 sm:min-w-[8rem]"
         />
+        <button
+          type="button"
+          onClick={() => void onSearchDoctors?.()}
+          className="h-10 shrink-0 rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition hover:bg-brand-700"
+        >
+          {t("dash.patient.doctors.searchBtn")}
+        </button>
         <div className="flex shrink-0 flex-row flex-nowrap items-center gap-1.5 sm:ms-auto">
           <button
             type="button"

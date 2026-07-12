@@ -126,6 +126,7 @@
         "subtitle": "Describe your condition — we find the most suitable specialist nearest to you.",
         "allCategories": "All categories",
         "searchPh": "Search doctor or category...",
+        "searchBtn": "Search",
         "experience": "Experience",
         "yearsPlus": "{{n}}+ years",
         "rating": "Rating",

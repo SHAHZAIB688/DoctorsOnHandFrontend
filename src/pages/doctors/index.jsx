@@ -29,10 +29,12 @@ const DoctorsPage = () => {
   const [condition, setCondition] = useState("");
   const [specialization, setSpecialization] = useState("All");
   const [nearBy, setNearBy] = useState({ active: false, lat: null, lng: null });
+  const [allSpecializations, setAllSpecializations] = useState([]);
   const [bookingDoctor, setBookingDoctor] = useState(null);
   const doctorsInitialFetchDone = useRef(false);
   const conditionRef = useRef(condition);
   const nearByRef = useRef(nearBy);
+  const specializationRef = useRef(specialization);
 
   useEffect(() => {
     conditionRef.current = condition;
@@ -42,15 +44,31 @@ const DoctorsPage = () => {
     nearByRef.current = nearBy;
   }, [nearBy]);
 
+  useEffect(() => {
+    specializationRef.current = specialization;
+  }, [specialization]);
 
+
+
+  useEffect(() => {
+    const fetchSpecializations = async () => {
+      try {
+        const { data } = await patient.get("/doctors/specializations");
+        setAllSpecializations(data.specializations || []);
+      } catch (error) {
+        console.error("Failed to fetch specializations:", error);
+      }
+    };
+    void fetchSpecializations();
+  }, []);
 
   const specializationOptions = useMemo(() => {
-    const unique = [...new Set(doctors.map((d) => d.specialization).filter(Boolean))].sort();
+    const specs = allSpecializations.length > 0 ? allSpecializations : [...new Set(doctors.map((d) => d.specialization).filter(Boolean))].sort();
     return [
       { value: "All", label: t("doctors.spec.all") },
-      ...unique.map((spec) => ({ value: spec, label: spec })),
+      ...specs.map((spec) => ({ value: spec, label: spec })),
     ];
-  }, [doctors, t, i18n.language]);
+  }, [allSpecializations, doctors, t, i18n.language]);
 
 
 
@@ -73,19 +91,21 @@ const DoctorsPage = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (specialization === "All" || loading || doctors.length === 0) return;
-    const available = new Set(doctors.map((d) => d.specialization).filter(Boolean));
+    if (specialization === "All" || loading) return;
+    const available = new Set(allSpecializations);
     if (!available.has(specialization)) {
       setSpecialization("All");
     }
-  }, [doctors, specialization, loading]);
+  }, [allSpecializations, specialization, loading]);
 
   const buildDoctorParams = useCallback(
     (skip = 0) => {
       const params = { limit: DOCTORS_PER_PAGE, skip };
       const conditionText = String(conditionRef.current || "").trim();
+      const specText = String(specializationRef.current || "").trim();
       const near = nearByRef.current;
       if (conditionText) params.condition = conditionText;
+      if (specText && specText !== "All") params.specialization = specText;
       if (near.active && near.lat != null && near.lng != null) {
         params.lat = near.lat;
         params.lng = near.lng;
@@ -128,6 +148,10 @@ const DoctorsPage = () => {
     doctorsInitialFetchDone.current = true;
     void fetchDoctors({ skip: 0, append: false });
   }, [fetchDoctors]);
+
+  useEffect(() => {
+    void fetchDoctors({ skip: 0, append: false });
+  }, [specialization, fetchDoctors]);
 
 
 

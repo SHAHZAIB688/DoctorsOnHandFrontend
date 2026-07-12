@@ -5,8 +5,11 @@ const Dropdown = ({ options, value, onChange, placeholder = "Select option", cla
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const selectedOption = options.find(opt => (opt.value || opt) === value);
-  const displayLabel = selectedOption ? (selectedOption.label || selectedOption) : placeholder;
+  const selectedOption = options.find(opt => {
+    const optValue = typeof opt === 'object' ? (opt.value || opt) : opt;
+    return optValue === value || optValue?.toString() === value?.toString();
+  });
+  const displayLabel = selectedOption ? (selectedOption.label || selectedOption.value || selectedOption) : placeholder;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -45,9 +48,9 @@ const Dropdown = ({ options, value, onChange, placeholder = "Select option", cla
         <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-[1.5rem] border border-slate-100 bg-white p-2.5 shadow-xl animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200">
           <div className="max-h-60 overflow-y-auto custom-scrollbar flex flex-col gap-1">
             {options.map((option, idx) => {
-              const optValue = option.value || option;
-              const optLabel = option.label || option;
-              const isSelected = optValue === value;
+              const optValue = typeof option === 'object' ? (option.value || option) : option;
+              const optLabel = typeof option === 'object' ? (option.label || option.value || option) : option;
+              const isSelected = optValue === value || optValue?.toString() === value?.toString();
 
               return (
                 <button

@@ -64,6 +64,7 @@ const PatientDashboard = () => {
     nearLng: null,
   });
   const [matchMeta, setMatchMeta] = useState({ matchedSpecializations: [], autoMatched: false });
+  const [allSpecializations, setAllSpecializations] = useState([]);
   const doctorFilterRef = useRef(doctorFilter);
   const [form, setForm] = useState({ doctorProfileId: "", date: "", timeSlot: "", reason: "" });
   const [availableSlots, setAvailableSlots] = useState([]);
@@ -85,10 +86,26 @@ const PatientDashboard = () => {
     doctorFilterRef.current = doctorFilter;
   }, [doctorFilter]);
 
+  useEffect(() => {
+    const fetchSpecializations = async () => {
+      try {
+        const { data } = await patient.get("/doctors/specializations");
+        setAllSpecializations(data.specializations || []);
+      } catch (error) {
+        console.error("Failed to fetch specializations:", error);
+      }
+    };
+    void fetchSpecializations();
+  }, []);
+
   const buildDoctorParams = useCallback(
     (skip = 0) => {
       const f = doctorFilterRef.current;
       const params = { limit: DOCTORS_PAGE_SIZE, skip };
+      const searchText = String(f.search || "").trim();
+      if (searchText) params.search = searchText;
+      const specText = String(f.specialization || "").trim();
+      if (specText && specText !== "all") params.specialization = specText;
       const conditionText = String(f.condition || "").trim();
       if (conditionText) params.condition = conditionText;
       if (f.nearMe && f.nearLat != null && f.nearLng != null) {
@@ -132,6 +149,10 @@ const PatientDashboard = () => {
     if (loadingMoreDoctors || doctors.length >= doctorsTotal) return;
     void fetchDoctors({ skip: doctors.length, append: true, withLoader: false });
   }, [doctors.length, doctorsTotal, fetchDoctors, loadingMoreDoctors]);
+
+  const searchDoctorsByName = useCallback(async () => {
+    await fetchDoctors({ skip: 0, append: false });
+  }, [fetchDoctors]);
 
   const fetchHealthSummary = async () => {
     try {
@@ -184,6 +205,10 @@ const PatientDashboard = () => {
     doctorsInitialFetchDone.current = true;
     void fetchDoctors({ skip: 0, append: false });
   }, [fetchDoctors]);
+
+  useEffect(() => {
+    void fetchDoctors({ skip: 0, append: false });
+  }, [doctorFilter.specialization, fetchDoctors]);
 
   useEffect(() => {
     fetchAppointments();
@@ -458,9 +483,9 @@ const PatientDashboard = () => {
   }, [appointments]);
 
   const doctorCategories = useMemo(() => {
-    const categories = new Set(doctors.map((d) => d.specialization).filter(Boolean));
-    return ["all", ...Array.from(categories)];
-  }, [doctors]);
+    const specs = allSpecializations.length > 0 ? allSpecializations : [...new Set(doctors.map((d) => d.specialization).filter(Boolean))];
+    return ["all", ...specs];
+  }, [allSpecializations, doctors]);
 
   const filteredDoctors = useMemo(() => {
     const searchText = doctorFilter.search.trim().toLowerCase();
@@ -558,6 +583,7 @@ const PatientDashboard = () => {
                 doctorsLoadedCount={doctors.length}
                 doctorsTotal={doctorsTotal}
                 onLoadMoreDoctors={loadMoreDoctors}
+                onSearchDoctors={searchDoctorsByName}
                 matchMeta={matchMeta}
                 setForm={setForm}
                 setBookingModalOpen={setBookingModalOpen}

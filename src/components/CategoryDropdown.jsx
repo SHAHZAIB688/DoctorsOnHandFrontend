@@ -9,35 +9,9 @@ const CategoryDropdown = ({
   className = "",
   ...props 
 }) => {
-  const ALL_SPECIALIZATIONS = [
-    "All",
-    "Cardiologist",
-    "Dermatologist", 
-    "Neurologist",
-    "Orthopedic",
-    "Pediatrician",
-    "General Physician",
-    "Gynecologist",
-    "Ophthalmologist",
-    "ENT Specialist",
-    "Psychiatrist",
-    "Oncologist",
-    "Endocrinologist",
-    "Gastroenterologist",
-    "Pulmonologist",
-    "Rheumatologist",
-    "Nephrologist",
-    "Urologist",
-    "Anesthesiologist",
-    "Radiologist",
-    "Pathologist"
-  ];
-
-  const dropdownOptions = options.length > 0 ? options : ALL_SPECIALIZATIONS;
-
   return (
     <Dropdown
-      options={dropdownOptions}
+      options={options}
       value={value}
       onChange={onChange}
       placeholder={placeholder}
