@@ -16,6 +16,7 @@
     "shell": {
       "notifications": "Notifications",
       "markAllRead": "Mark all read",
+      "clearAll": "Clear all",
       "newCount": "{{count}} new",
       "allCaughtUp": "All caught up!",
       "avatarAlt": "Avatar",
@@ -341,6 +342,11 @@
     "admin": {
       "title": "Admin dashboard",
       "subtitle": "Control doctor verification and system operations.",
+      "notif": {
+        "newApplicationTitle": "New doctor application",
+        "newApplicationBody": "{{name}} applied for {{specialization}}. Review and verify.",
+        "unknownDoctor": "A doctor"
+      },
       "nav": {
         "dashboard": "Dashboard",
         "applications": "Doctor applications",

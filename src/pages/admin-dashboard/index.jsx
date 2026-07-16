@@ -183,10 +183,26 @@ const AdminDashboard = () => {
     };
   }, [approvedDoctors, applications, t]);
 
+  const notifications = useMemo(() => {
+    return applications
+      .filter((a) => a.status === "pending")
+      .map((a) => ({
+        id: `app-${a._id}`,
+        title: t("dash.admin.notif.newApplicationTitle"),
+        message: t("dash.admin.notif.newApplicationBody", {
+          name: a.user?.name || t("dash.admin.notif.unknownDoctor"),
+          specialization: a.specialization || "—",
+        }),
+        type: "alert",
+        linkTab: "applications",
+      }));
+  }, [applications, t]);
+
   return (
     <DashboardShell
       title={t("dash.admin.title")}
       subtitle={t("dash.admin.subtitle")}
+      notifications={notifications}
       navItems={[
         { id: "dashboard", label: t("dash.admin.nav.dashboard"), icon: DashboardIcon },
         {

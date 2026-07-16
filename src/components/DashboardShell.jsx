@@ -24,10 +24,15 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
     const saved = localStorage.getItem("readNotifications");
     return saved ? JSON.parse(saved) : [];
   });
+  const [dismissedIds, setDismissedIds] = useState(() => {
+    const saved = localStorage.getItem("dismissedNotifications");
+    return saved ? JSON.parse(saved) : [];
+  });
   const notificationRef = useRef(null);
 
   const safeNotifications = Array.isArray(notifications) ? notifications : [];
-  const unreadNotifications = safeNotifications.filter(n => !readIds.includes(n.id));
+  const visibleNotifications = safeNotifications.filter(n => !dismissedIds.includes(n.id));
+  const unreadNotifications = visibleNotifications.filter(n => !readIds.includes(n.id));
   const hasUnread = unreadNotifications.length > 0 || navItems?.some(item => item.hasNotification);
 
   const roleLabel = useMemo(() => roleShellLabel(user?.role, t), [user?.role, t]);
@@ -35,6 +40,10 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
   useEffect(() => {
     localStorage.setItem("readNotifications", JSON.stringify(readIds));
   }, [readIds]);
+
+  useEffect(() => {
+    localStorage.setItem("dismissedNotifications", JSON.stringify(dismissedIds));
+  }, [dismissedIds]);
 
   const markAsRead = (id) => {
     if (!readIds.includes(id)) {
@@ -45,6 +54,11 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
   const markAllAsRead = () => {
     const allIds = safeNotifications.map(n => n.id);
     setReadIds(prev => [...new Set([...prev, ...allIds])]);
+  };
+
+  const clearAllNotifications = () => {
+    const allIds = safeNotifications.map(n => n.id);
+    setDismissedIds(prev => [...new Set([...prev, ...allIds])]);
   };
 
   useEffect(() => {
@@ -118,11 +132,14 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
                 {unreadNotifications.length > 0 && (
                   <button type="button" onClick={markAllAsRead} className="text-[10px] font-bold text-slate-400 hover:text-brand-600 transition-colors">{t("dash.shell.markAllRead")}</button>
                 )}
+                {visibleNotifications.length > 0 && (
+                  <button type="button" onClick={clearAllNotifications} className="text-[10px] font-bold text-slate-400 hover:text-rose-600 transition-colors">{t("dash.shell.clearAll")}</button>
+                )}
                 <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">{t("dash.shell.newCount", { count: unreadNotifications.length })}</span>
               </div>
             </div>
             <div className="mt-2 max-h-96 overflow-y-auto custom-scrollbar">
-              {safeNotifications.length === 0 ? (
+              {visibleNotifications.length === 0 ? (
                 <div className="px-4 py-8 text-center">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-50 text-slate-300 mb-3">
                     <BellIcon />
@@ -130,7 +147,7 @@ const DashboardShell = ({ title, subtitle, navItems, children, notifications, de
                   <p className="text-xs font-medium text-slate-500">{t("dash.shell.allCaughtUp")}</p>
                 </div>
               ) : (
-                safeNotifications.map((notif) => (
+                visibleNotifications.map((notif) => (
                   <button
                     key={notif.id}
                     type="button"

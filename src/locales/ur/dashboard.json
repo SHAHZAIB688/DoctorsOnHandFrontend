@@ -16,6 +16,7 @@
     "shell": {
       "notifications": "اطلاعات",
       "markAllRead": "سب پڑھ لیے کا نشان",
+      "clearAll": "سب صاف کریں",
       "newCount": "{{count}} نئی",
       "allCaughtUp": "سب تازہ!",
       "avatarAlt": "تصویر",
@@ -341,6 +342,11 @@
     "admin": {
       "title": "ایڈمن ڈیش بورڈ",
       "subtitle": "ڈاکٹر تصدیق اور سسٹم کنٹرول۔",
+      "notif": {
+        "newApplicationTitle": "نئی ڈاکٹر درخواست",
+        "newApplicationBody": "{{name}} نے {{specialization}} کیلئے درخواست دی ہے۔ جائزہ لیں۔",
+        "unknownDoctor": "ایک ڈاکٹر"
+      },
       "nav": {
         "dashboard": "ڈیش بورڈ",
         "applications": "ڈاکٹر درخواستیں",
