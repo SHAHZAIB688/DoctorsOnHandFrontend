@@ -74,7 +74,7 @@
         "paymentVerified": "Stripe payment verified successfully.",
         "verifyFail": "Stripe payment verification failed",
         "inProgress": "{{doctor}} has marked your appointment as in progress.",
-        "booked": "Service booked and WhatsApp sent",
+        "booked": "Service Booked",
         "bookingFail": "Booking failed",
         "invalidSlot": "Please select a valid time slot",
         "joinTooEarly": "Please wait. You can only join up to 5 minutes before your scheduled time.",
